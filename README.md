@@ -1,4 +1,4 @@
-Quick CSV Streamer
+Quick CSV Streamer  [![Build Status](https://travis-ci.org/titorenko/quick-csv-streamer.svg?branch=master)](https://travis-ci.org/titorenko/quick-csv-streamer)
 =============
 
 Quick CSV streamer is CSV parsing library with Java 8 Stream API with particular focus on performance.
@@ -61,9 +61,9 @@ It is very important to appreciate that performance might differ drastically dep
 
 |Benchmark            |Mode  |Cnt  |   Score |   Error  |Units|
 | ------------------- | ---- | --- | ------- | -------- | --- | 
-|OpenCSVParser        |avgt  |  5  |2613.354 |± 53.583  |ms/op|
-|Quick CSV Parallel   |avgt  |  5  | 190.009 |±  9.800  |ms/op|
-|Quick CSV Sequential |avgt  |  5  | 698.985 |± 50.478  |ms/op|
+|OpenCSVParser        |avgt  |  5  |2613.354 |Â± 53.583  |ms/op|
+|Quick CSV Parallel   |avgt  |  5  | 190.009 |Â±  9.800  |ms/op|
+|Quick CSV Sequential |avgt  |  5  | 698.985 |Â± 50.478  |ms/op|
 
 
 Comparison is done with OpenCSV library, performance of other libraries can be extrapolated using chart from https://github.com/uniVocity/csv-parsers-comparison 
