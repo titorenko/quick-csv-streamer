@@ -44,7 +44,7 @@ Then to convert records
         this.longitude = r.getNextField().asDouble();
     }    
     
-note that CSVRecord has pull-style API that allows for targeted selection of attributes, with unused attributes ignored in most efficient manner.
+Note that CSVRecord has pull-style API that allows for targeted selection of attributes, with unused attributes ignored in most efficient manner.
 
 After that stream can be consumed in parallel or on single thread using normal Java stream API.
 
@@ -58,10 +58,11 @@ Best way to check performance of the library is to run benchmark on your local s
     
 It is very important to appreciate that performance might differ drastically depending on the actual CSV content. As very rough guideline below is sample output of "gradle bench" on i7 2700k Ubuntu system, which uses cities.txt similar to example above, expanded to have 3173800 rows and 157 MB in size:
 
-Benchmark                                                   Mode  Cnt     Score    Error  Units
-BenchmarkParserAndMapperInMemory.benchmarkOpenCSVParser     avgt    5  2613.354 ± 53.583  ms/op
-BenchmarkParserAndMapperInMemory.benchmarkParallelParser    avgt    5   190.009 ±  9.800  ms/op
-BenchmarkParserAndMapperInMemory.benchmarkSequentialParser  avgt    5   698.985 ± 50.478  ms/op
+|Benchmark                                                   |Mode  |Cnt  |   Score |   Error  |Units|
+| ---------------------------------------------------------- | ---- | --- | ------- | -------- | --- | 
+|BenchmarkParserAndMapperInMemory.benchmarkOpenCSVParser     |avgt  |  5  |2613.354 |± 53.583  |ms/op|
+|BenchmarkParserAndMapperInMemory.benchmarkParallelParser    |avgt  |  5  | 190.009 |±  9.800  |ms/op|
+|BenchmarkParserAndMapperInMemory.benchmarkSequentialParser  |avgt  |  5  | 698.985 |± 50.478  |ms/op|
 
 
 Comparison is done with OpenCSV library, performance of other libraries can be extrapolated using chart from https://github.com/uniVocity/csv-parsers-comparison. 
