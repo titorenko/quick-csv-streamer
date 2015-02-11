@@ -90,5 +90,5 @@ Quick CSV Streamer library requires Java 8, it has no other dependencies and thu
 
 License
 --------------
-Library is licensed under the terms of GPL v.2 license.
+Library is licensed under the terms of [GPL v2.0 license](http://www.gnu.org/licenses/gpl-2.0.html).
         
