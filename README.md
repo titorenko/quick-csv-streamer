@@ -7,8 +7,20 @@ Parallel, multi-core parsing is supported as well as single-core sequential pars
 stream API. Usually you would be able to achieve 2x speed up on single core, compared to other
 Java CSV parsing libraries and even more on multiple core or if your input file is sparse.
 
+Maven dependency
+--------------
+
+Available from Maven Central:
+
+    <dependency>
+        <groupId>uk.elementarysoftware</groupId>
+        <artifactId>quick-csv-streamer</artifactId>
+        <version>0.1.0</version>
+    </dependency>
+
 Example usage
 --------------
+
 Suppose following CSV file needs to be parsed
     
     Country,City,AccentCity,Region,Population,Latitude,Longitude

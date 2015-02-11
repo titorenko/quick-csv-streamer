@@ -97,48 +97,53 @@ artifacts {
     archives javadocJar, sourcesJar
 }
 
-signing {
-    sign configurations.archives
-}
+if (hasProperty('ossrhUsername')) {
+	
+	signing {
+	    sign configurations.archives
+	}
 
-uploadArchives {
-  repositories {
-    mavenDeployer {
-      beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+	uploadArchives {
+	  repositories {
+	    mavenDeployer {
+	      beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
 
-      repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-        authentication(userName: ossrhUsername, password: ossrhPassword)
-      }
+	      repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+	        authentication(userName: ossrhUsername, password: ossrhPassword)
+	      }
 
-      snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-        authentication(userName: ossrhUsername, password: ossrhPassword)
-      }
+	      snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+	        authentication(userName: ossrhUsername, password: ossrhPassword)
+	      }
 
-      pom.project {
-        name 'Quick CSV Streamer'
-        packaging 'jar'
+	      pom.project {
+	        name 'Quick CSV Streamer'
+	        packaging 'jar'
+	        description 'Quick CSV Parser with Java 8 Streams API'
+	        url 'https://github.com/titorenko/quick-csv-streamer'
 
-        scm {
-          connection 'scm:git:git://github.com/titorenko/quick-csv-streamer.git'
-          developerConnection 'scm:git:git@github.com:titorenko/quick-csv-streamer.git'
-          url 'https://github.com/titorenko/quick-csv-streamer'
-        }
+	        scm {
+	          connection 'scm:git:git://github.com/titorenko/quick-csv-streamer.git'
+	          developerConnection 'scm:git:git@github.com:titorenko/quick-csv-streamer.git'
+	          url 'https://github.com/titorenko/quick-csv-streamer'
+	        }
 
-        licenses {
-          license {
-            name 'GNU General Public License, version 2'
-            url 'http://www.gnu.org/licenses/gpl-2.0.html'
-          }
-        }
+	        licenses {
+	          license {
+	            name 'GNU General Public License, version 2'
+	            url 'http://www.gnu.org/licenses/gpl-2.0.html'
+	          }
+	        }
 
-        developers {
-          developer {
-            id 'elementarysoftware'
-            name 'Elementary Software Ltd.'
-            email 'elementarysoftware@gmail.com'
-          }
-        }
-      }
-    }
-  }
+	        developers {
+	          developer {
+	            id 'elementarysoftware'
+	            name 'Elementary Software Ltd.'
+	            email 'elementarysoftware@gmail.com'
+	          }
+	        }
+	      }
+	    }
+	  }
+	}
 }
