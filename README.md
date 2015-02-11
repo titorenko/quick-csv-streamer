@@ -1,6 +1,7 @@
 Quick CSV Streamer  
-[![Build Status](https://travis-ci.org/titorenko/quick-csv-streamer.svg?branch=master)](https://travis-ci.org/titorenko/quick-csv-streamer)
 =============
+
+[![Build Status](https://travis-ci.org/titorenko/quick-csv-streamer.svg?branch=master)](https://travis-ci.org/titorenko/quick-csv-streamer)
 
 Quick CSV streamer is CSV parsing library with Java 8 Stream API with particular focus on performance.
 Additionally the library provides fast mappers to standard Java types, like doubles and ints.
