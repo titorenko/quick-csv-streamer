@@ -104,14 +104,14 @@ class SingleByteSlice implements ByteSlice {
     }
     
     public boolean skipUntil(final char c) {
-        boolean isFound = true;
-        int index = currentIndex;
-        try {
-            while (buffer[index++]!=c);
-            currentIndex = index;
-        } catch (ArrayIndexOutOfBoundsException e) {
-            isFound = false;
-            currentIndex = end;
+    	boolean isFound = false;
+        while(currentIndex < end) {
+            if (buffer[currentIndex]==c) {
+                currentIndex++;
+                isFound = true;
+                break;
+            }
+            currentIndex++;
         }
         return isFound;
     }

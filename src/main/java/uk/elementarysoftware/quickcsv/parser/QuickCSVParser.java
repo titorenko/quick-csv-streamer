@@ -20,15 +20,17 @@ public class QuickCSVParser implements CSVParser {
 
     private final CSVFileMetadata metadata;
     private final int bufferSize;
+	private int nRecordsToSkip;
 
-    public QuickCSVParser(int bufferSize, CSVFileMetadata metadata) {
+    public QuickCSVParser(int bufferSize, CSVFileMetadata metadata, int nRecordsToSkip) {
 	    this.metadata = metadata;
 	    this.bufferSize = bufferSize;
+	    this.nRecordsToSkip = nRecordsToSkip;
 	}
 
     @Override
     public Stream<CSVRecord> parse(InputStream is) {
-        return StreamSupport.stream(new SplittingSpliterator(is), true);
+        return StreamSupport.stream(new SplittingSpliterator(is, nRecordsToSkip), true);
     }
 
     class SplittingSpliterator implements Spliterator<CSVRecord> {
@@ -38,16 +40,19 @@ public class QuickCSVParser implements CSVParser {
         
         private ByteSlice prefix = ByteSlice.empty(); 
         private boolean isEndReached = false;
+        private boolean isFirstSlice = true;
+		private int nRecordsToSkip;
 
-        public SplittingSpliterator(InputStream is) {
+        public SplittingSpliterator(InputStream is, int nRecordsToSkip) {
             this.is = is;
             this.pool = new BufferPool(bufferSize);
+            this.nRecordsToSkip = nRecordsToSkip;
         }
         
         private Spliterator<CSVRecord> sequentialSplitterator = Spliterators.emptySpliterator();
 
         @Override
-        public boolean tryAdvance(Consumer<? super CSVRecord> action) {
+        public boolean tryAdvance(Consumer<? super CSVRecord> action) { //only called in sequential mode
             boolean advanced = sequentialSplitterator.tryAdvance(action);
             if (advanced) return true;
             if (isEndReached) return false;
@@ -80,7 +85,14 @@ public class QuickCSVParser implements CSVParser {
                 int read = is.read(buffer);
                 this.isEndReached = read < buffer.length;
                 if (isEndReached) IOUtils.closeQuietly(is);
-                return ByteSlice.wrap(buffer, read);
+                ByteSlice result = ByteSlice.wrap(buffer, read);
+                if (isFirstSlice) {
+                	for (int i = 0; i < nRecordsToSkip; i++) {
+                		result.nextLine();
+					}
+                	isFirstSlice = false;
+                }
+                return result;
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }

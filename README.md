@@ -15,7 +15,7 @@ Available from Maven Central:
     <dependency>
         <groupId>uk.elementarysoftware</groupId>
         <artifactId>quick-csv-streamer</artifactId>
-        <version>0.1.0</version>
+        <version>0.1.1</version>
     </dependency>
 
 Example usage
@@ -41,8 +41,10 @@ First define Java class to represent the records as follows
    
 To parse the file 
     
-    Stream<CSVRecord> records = CSVParserBuilder.aParser().forRfc4180().build()
-    	.parse(new File("cities.txt")).skip(1)
+    import uk.elementarysoftware.quickcsv.api.*;
+    
+    Stream<CSVRecord> records = CSVParserBuilder.aParser().forRfc4180().skipFirstRecord()
+    	.build().parse(new File("cities.txt"));
 
 Then to convert records 
        
