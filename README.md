@@ -63,8 +63,11 @@ Then to convert records
     
 Note that CSVRecord has pull-style API that allows for targeted selection of attributes, with unused attributes ignored in most efficient manner.
 
-After that stream can be consumed in parallel or on single thread using normal Java stream API.
+After that stream can be consumed in parallel or on single thread using normal Java stream API. For example to parse on single thread 
 
+    Stream<City> cities = records.sequential().map(r -> new City(r));
+
+Please see this [sample project](https://github.com/titorenko/quick-csv-streamer-cities-sample) for full source code of the above example.
 
 Performance
 --------------    
