@@ -1,6 +1,12 @@
+plugins {
+   id 'me.champeau.gradle.jmh' version '0.2.0'
+}
+
 apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'signing'
+apply plugin: 'me.champeau.gradle.jmh'
+apply plugin: "eclipse"
 
 group = 'uk.elementarysoftware'
 version = '0.1.2-SNAPSHOT'
@@ -8,49 +14,27 @@ version = '0.1.2-SNAPSHOT'
 sourceCompatibility = JavaVersion.VERSION_1_8
 
 
-buildscript {
-    repositories {
-        maven {
-            name 'Shadow'
-            url 'http://dl.bintray.com/content/gvsmirnov/gradle-plugins'
-        }
-        jcenter()
-    }
-    dependencies {
-        classpath 'com.github.jengelman.gradle.plugins:shadow:0.8.1'
-    }
-}
-
 repositories {
     mavenCentral()
-}
-
-sourceSets {
-    perf
 }
 
 dependencies {	
     testCompile group: 'commons-io', name: 'commons-io', version: '2.4'
     testCompile group: 'junit', name: 'junit', version: '4.11'
-
-	def jmhVersion = '1.5'
-    perfCompile project
-    perfCompile "commons-io:commons-io:2.4"
-    perfCompile "org.openjdk.jmh:jmh-core:$jmhVersion"
-    perfCompile "org.openjdk.jmh:jmh-generator-annprocess:$jmhVersion"
-    perfCompile "net.sf.opencsv:opencsv:2.3"
+	    
+    jmh "commons-io:commons-io:2.4"    
+    jmh "net.sf.opencsv:opencsv:2.3"
 }
 
-apply plugin: "eclipse"
+jmh {
+    include = '.*BenchmarkParserAndMapperInMemory.*' 
+    jmhVersion = '1.8'
+    jvmArgsAppend = '-Xmx1g -XX:+AggressiveOpts'     
+}
+
 eclipse {
     classpath {
-        plusConfigurations += [ configurations.perfCompile ]
-    }
-}
-
-eclipse.classpath.file {
-    whenMerged  { classpath ->
-        classpath.entries.removeAll { entry -> entry.kind == 'src' && entry.path.startsWith("/") }
+        plusConfigurations += [ configurations.jmh ]
     }
 }
 
@@ -62,35 +46,6 @@ task javadocJar(type: Jar) {
 task sourcesJar(type: Jar) {
     classifier = 'sources'
     from sourceSets.main.allSource
-}
-
-task perfJar(type: Jar, dependsOn: perfClasses) {
-    from sourceSets.perf.output + sourceSets.main.output
-}
-
-task benchJar(dependsOn: perfJar) {
-
-    apply plugin: "shadow"
-
-    shadow {
-        classifier = "benchmarks"
-        includeDependenciesFor = ["runtime", "perfRuntime"]
-
-        transformer(com.github.jengelman.gradle.plugins.shadow.transformers.ManifestResourceTransformer) {
-            mainClass = "org.openjdk.jmh.Main"
-        }
-    }
-
-    doLast {
-        shadowJar.execute(
-)    }
-}
-
-task bench(type:Exec, dependsOn: benchJar) {
-	commandLine 'java', '-Xmx1g', '-XX:+AggressiveOpts', '-jar', "$buildDir.path/distributions/$rootProject.name-$version-benchmarks.jar"
-	if(project.hasProperty("jmh")){
-        args jmh
-    }
 }
 
 artifacts {

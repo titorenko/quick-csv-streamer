@@ -74,9 +74,11 @@ Performance
 
 Best way to check performance of the library is to run benchmark on your local system with
 
-    gradle bench
+    gradle jmh
     
-It is very important to appreciate that performance might differ drastically depending on the actual CSV content. As very rough guideline below is sample output of "gradle bench" on i7 2700k Ubuntu system, which uses cities.txt similar to example above, expanded to have 3173800 rows and 157 MB in size:
+reports can be then found in build/reports/jmh.    
+    
+It is very important to appreciate that performance might differ drastically depending on the actual CSV content. As very rough guideline below is sample output of "gradle jmh" on i7 2700k Ubuntu system, which uses cities.txt similar to example above, expanded to have 3173800 rows and 157 MB in size:
 
 |Benchmark            |Mode  |Cnt  |   Score |   Error  |Units|
 | ------------------- | ---- | --- | ------- | -------- | --- | 
