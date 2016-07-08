@@ -29,6 +29,16 @@ public class ByteSliceTest {
     
     
     @Test
+    public void testSplitOnLastLineEndWithSkip() {
+        String content = "line1\nline2\nlastline";
+        ByteSlice slice = ByteSlice.wrap(content.getBytes());
+        slice.nextLine();
+        Pair<ByteSlice, ByteSlice> sliced = slice.splitOnLastLineEnd();
+        assertEquals("line2\n", sliced.first.toString());
+        assertEquals("lastline", sliced.second.toString());
+    }
+    
+    @Test
     public void testSingleSlice() {
         ByteSlice slice = ByteSlice.wrap(FIELDS22.getBytes());
         List<Field> fields = getFields(slice);

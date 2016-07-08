@@ -21,11 +21,11 @@ public class CityManualPerformanceTester {
 	
 	
 	private void run(File source, int nRuns) throws Exception {
-	    CSVParser parser = new CSVParserBuilder().build();
+	    CSVParser<City> parser = CSVParserBuilder.aParser(City.MAPPER).build();
 		long maxSpeed = 0;
 		for (int i = 0; i < nRuns; i++) {
 			long start = System.currentTimeMillis();
-			parser.parse(source).map(City.MAPPER).count();
+			parser.parse(source).count();
 			long duration = System.currentTimeMillis() - start;
 			if (duration == 0) continue;
 			System.out.println("done " +source.getName()+" in "+duration);

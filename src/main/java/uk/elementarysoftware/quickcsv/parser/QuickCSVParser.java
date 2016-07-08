@@ -1,100 +1,100 @@
 package uk.elementarysoftware.quickcsv.parser;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.UncheckedIOException;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import uk.elementarysoftware.quickcsv.api.ByteArraySource;
+import uk.elementarysoftware.quickcsv.api.ByteArraySource.ByteArrayItem;
 import uk.elementarysoftware.quickcsv.api.CSVParser;
+import uk.elementarysoftware.quickcsv.api.CSVParserBuilder.CSVFileMetadata;
 import uk.elementarysoftware.quickcsv.api.CSVRecord;
 import uk.elementarysoftware.quickcsv.api.Field;
-import uk.elementarysoftware.quickcsv.api.CSVParserBuilder.CSVFileMetadata;
 import uk.elementarysoftware.quickcsv.tuples.Pair;
-import uk.elementarysoftware.quickcsv.utils.IOUtils;
 
-public class QuickCSVParser implements CSVParser {
+public class QuickCSVParser<T> implements CSVParser<T> {
 
     private final CSVFileMetadata metadata;
     private final int bufferSize;
-	private int nRecordsToSkip;
+	private final Function<CSVRecord, T> mapper;
 
-    public QuickCSVParser(int bufferSize, CSVFileMetadata metadata, int nRecordsToSkip) {
+    public QuickCSVParser(int bufferSize, CSVFileMetadata metadata, Function<CSVRecord, T> mapper) {
 	    this.metadata = metadata;
 	    this.bufferSize = bufferSize;
-	    this.nRecordsToSkip = nRecordsToSkip;
+	    this.mapper = mapper;
 	}
-
+    
     @Override
-    public Stream<CSVRecord> parse(InputStream is) {
-        return StreamSupport.stream(new SplittingSpliterator(is, nRecordsToSkip), true);
+    public Stream<T> parse(InputStream is) {
+        BufferPool pool = new BufferPool(bufferSize);
+        return parse(new InputStreamToByteArraySourceAdapter(is, pool));
     }
 
-    class SplittingSpliterator implements Spliterator<CSVRecord> {
+    @Override
+    public Stream<T> parse(ByteArraySource bas) {
+        return StreamSupport.stream(new SplittingSpliterator(bas), true);
+    }
+
+    class SplittingSpliterator implements Spliterator<T> {
         
-        private final InputStream is;
-        private final BufferPool pool;
+        private final ByteArraySource bas;
         
         private ByteSlice prefix = ByteSlice.empty(); 
         private boolean isEndReached = false;
-        private boolean isFirstSlice = true;
-		private int nRecordsToSkip;
 
-        public SplittingSpliterator(InputStream is, int nRecordsToSkip) {
-            this.is = is;
-            this.pool = new BufferPool(bufferSize);
-            this.nRecordsToSkip = nRecordsToSkip;
+        private Spliterator<T> sequentialSplitterator = Spliterators.emptySpliterator();
+
+        SplittingSpliterator(ByteArraySource bas) {
+        	this.bas = bas;
         }
-        
-        private Spliterator<CSVRecord> sequentialSplitterator = Spliterators.emptySpliterator();
 
         @Override
-        public boolean tryAdvance(Consumer<? super CSVRecord> action) { //only called in sequential mode
+        public boolean tryAdvance(Consumer<? super T> action) { //usually only called in sequential mode
             boolean advanced = sequentialSplitterator.tryAdvance(action);
             if (advanced) return true;
             if (isEndReached) return false;
 
-            ByteSlice slice = nextSlice();
+            ByteSlice bareSlice = nextSlice();
+            ByteSlice nextSlice;
             if (isEndReached) {
-                this.sequentialSplitterator = new ByteSliceSpliterator(ByteSlice.join(prefix, slice));
+                nextSlice = ByteSlice.join(prefix, bareSlice);
             } else {
-                Pair<ByteSlice, ByteSlice> sliced = slice.splitOnLastLineEnd();
-                this.sequentialSplitterator = new ByteSliceSpliterator(ByteSlice.join(prefix, sliced.first));
+                Pair<ByteSlice, ByteSlice> sliced = bareSlice.splitOnLastLineEnd();
+                nextSlice = ByteSlice.join(prefix, sliced.first);
                 this.prefix = sliced.second;
             }
+            if (!nextSlice.hasMoreData()) return false;
+            this.sequentialSplitterator = new ByteSliceSpliterator(nextSlice);
             return tryAdvance(action);
         }
 
         @Override
-        public Spliterator<CSVRecord> trySplit() {
+        public Spliterator<T> trySplit() {
             if (isEndReached) return null;
-            ByteSlice slice = nextSlice();
-            if (isEndReached) return new ByteSliceSpliterator(ByteSlice.join(prefix, slice));
-            Pair<ByteSlice, ByteSlice> sliced = slice.splitOnLastLineEnd();
-            Spliterator<CSVRecord> result = new ByteSliceSpliterator(ByteSlice.join(prefix, sliced.first));
-            this.prefix = sliced.second;
-            return result;
+            ByteSlice bareSlice = nextSlice();
+            ByteSlice nextSlice;
+            if (isEndReached) {
+                nextSlice = ByteSlice.join(prefix, bareSlice);
+            } else {
+                Pair<ByteSlice, ByteSlice> sliced = bareSlice.splitOnLastLineEnd();
+                nextSlice = ByteSlice.join(prefix, sliced.first);
+                this.prefix = sliced.second;
+            }
+            if (!nextSlice.hasMoreData()) return null;
+            return new ByteSliceSpliterator(nextSlice);
         }
 
         private ByteSlice nextSlice() {
             try {
-                byte[] buffer = pool.getBuffer();
-                int read = is.read(buffer);
-                this.isEndReached = read < buffer.length;
-                if (isEndReached) IOUtils.closeQuietly(is);
-                ByteSlice result = ByteSlice.wrap(buffer, read);
-                if (isFirstSlice) {
-                	for (int i = 0; i < nRecordsToSkip; i++) {
-                		result.nextLine();
-					}
-                	isFirstSlice = false;
-                }
-                return result;
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
+                ByteArrayItem it = bas.getNext();
+                this.isEndReached = it.isLast();
+                return ByteSlice.wrap(it.getData(), it.getLength());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
         }
 
@@ -105,11 +105,11 @@ public class QuickCSVParser implements CSVParser {
 
         @Override
         public int characteristics() {
-            return ORDERED & NONNULL & IMMUTABLE;
+            return ORDERED | NONNULL | IMMUTABLE;
         }
     }
     
-    class ByteSliceSpliterator implements Spliterator<CSVRecord>, CSVRecord {
+    class ByteSliceSpliterator implements Spliterator<T>, CSVRecord {
 
         private ByteSlice slice;
 
@@ -118,14 +118,17 @@ public class QuickCSVParser implements CSVParser {
         }
 
         @Override
-        public boolean tryAdvance(Consumer<? super CSVRecord> action) {
-            action.accept(this);
+        public boolean tryAdvance(Consumer<? super T> action) {
+            if (!slice.hasMoreData())
+                return false;
+            T t = mapper.apply(this);
+            action.accept(t);
             slice.nextLine();
-            return slice.hasMoreData();
+            return true;
         }
 
         @Override
-        public Spliterator<CSVRecord> trySplit() {
+        public Spliterator<T> trySplit() {
             return null;
         }
 
@@ -136,7 +139,7 @@ public class QuickCSVParser implements CSVParser {
 
         @Override
         public int characteristics() {
-            return ORDERED & NONNULL & IMMUTABLE;
+            return ORDERED | NONNULL | IMMUTABLE;
         }
 
         @Override

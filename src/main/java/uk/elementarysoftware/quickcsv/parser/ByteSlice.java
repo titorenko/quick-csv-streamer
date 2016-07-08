@@ -97,8 +97,8 @@ class SingleByteSlice implements ByteSlice {
     
     public Pair<ByteSlice, ByteSlice> splitOnLastLineEnd() {
         int i = end-1;
-        for (;i >=start && buffer[i] != LF; i--);
-        SingleByteSlice prefix = new SingleByteSlice(buffer, start, i+1);
+        for (;i >=currentIndex && buffer[i] != LF; i--);
+        SingleByteSlice prefix = new SingleByteSlice(buffer, currentIndex, i+1);
         SingleByteSlice suffix = new SingleByteSlice(buffer, i+1, end);
         return Pair.of(prefix, suffix);
     }

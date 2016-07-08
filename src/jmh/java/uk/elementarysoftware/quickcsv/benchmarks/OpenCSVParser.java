@@ -1,6 +1,10 @@
 package uk.elementarysoftware.quickcsv.benchmarks;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.UncheckedIOException;
 import java.util.Iterator;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -9,7 +13,8 @@ import java.util.stream.StreamSupport;
 
 import org.apache.commons.io.IOUtils;
 
-import au.com.bytecode.opencsv.CSVReader;
+import com.opencsv.CSVReader;
+
 
 public class OpenCSVParser {
     

@@ -1,62 +1,55 @@
 package uk.elementarysoftware.quickcsv.api;
 
 import java.util.Optional;
+import java.util.function.Function;
 
 import uk.elementarysoftware.quickcsv.parser.QuickCSVParser;
 
-public class CSVParserBuilder {
+public class CSVParserBuilder<T> {
     
     private int bufferSize = 512*1024;
     
     private CSVFileMetadata metadata = CSVFileMetadata.RFC_4180;
 
-	private int nRecordsToSkip = 0;
+	private final Function<CSVRecord, T> mapper;
     
-    public static CSVParserBuilder aParser() {
-        return new CSVParserBuilder();
+    private CSVParserBuilder(Function<CSVRecord, T> mapper) {
+    	this.mapper = mapper;
+	}
+
+	public static <T> CSVParserBuilder<T> aParser(Function<CSVRecord, T> mapper) {
+        return new CSVParserBuilder<T>(mapper);
     }
     
-    public CSVParserBuilder forTabs() {
+    public CSVParserBuilder<T> forTabs() {
         this.metadata = CSVFileMetadata.TABS;
         return this;
     }
     
-    public CSVParserBuilder forRfc4180() {
+    public CSVParserBuilder<T> forRfc4180() {
         this.metadata = CSVFileMetadata.RFC_4180;
         return this;
     }
     
-    public CSVParserBuilder usingSeparatorWithNoQuotes(char separator) {
+    public CSVParserBuilder<T> usingSeparatorWithNoQuotes(char separator) {
         this.metadata = new CSVFileMetadata(separator, Optional.empty());
         return this;
     }
     
-    public CSVParserBuilder usingSeparatorWithQuote(char separator, char quote) {
+    public CSVParserBuilder<T> usingSeparatorWithQuote(char separator, char quote) {
         this.metadata = new CSVFileMetadata(separator, Optional.of(quote));
         return this;
     }
     
     
-    public CSVParserBuilder usingBufferSize(int size) {
+    public CSVParserBuilder<T> usingBufferSize(int size) {
         this.bufferSize = size;
         return this;
     }
     
-    public CSVParserBuilder skipFirstRecord() {
-    	this.nRecordsToSkip = 1;
-    	return this;
-	}
     
-    /**
-     * Can only skip records from first buffer, so nRecordsToSkip must be small.
-     */
-    public CSVParserBuilder skipRecords(int nRecordsToSkip) {
-    	this.nRecordsToSkip = nRecordsToSkip;
-    	return this;
-	}
-    
-    public CSVParser build() {
-        return new QuickCSVParser(bufferSize, metadata, nRecordsToSkip);
+    public CSVParser<T> build() {
+        return new QuickCSVParser<T>(bufferSize, metadata, mapper);
     }
     
     public static class CSVFileMetadata {

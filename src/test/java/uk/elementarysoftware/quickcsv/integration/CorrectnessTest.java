@@ -19,7 +19,7 @@ public class CorrectnessTest {
     @Test
     @SuppressWarnings("unchecked")
     public void testParse() throws IOException {
-        Stream<List<String>> stream = CSVParserBuilder.aParser().build().parse(input).map(StandardMappers.TO_STRING_LIST);
+        Stream<List<String>> stream = CSVParserBuilder.aParser(StandardMappers.TO_STRING_LIST).build().parse(input);
         List<String>[] rows = stream.toArray(List[]::new);
         assertArrayEquals(new String[] {"Year", "Make", "Model", "Description", "Price"}, rows[0].toArray(new String[0]));
         assertArrayEquals(new String[] {"1997", "Ford", "E350", "ac, abs, moon", "3000.00"}, rows[1].toArray(new String[0]));

@@ -8,11 +8,12 @@ import java.nio.file.Files;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import uk.elementarysoftware.quickcsv.api.ByteArraySource;
 import uk.elementarysoftware.quickcsv.api.CSVParser;
 import uk.elementarysoftware.quickcsv.api.CSVRecord;
 import uk.elementarysoftware.quickcsv.api.Field;
 
-public class StraightForwardParser implements CSVParser {
+public class StraightForwardParser implements CSVParser<CSVRecord> {
 	
     @Override @SuppressWarnings("resource")
     public Stream<CSVRecord> parse(File source) throws IOException {
@@ -117,6 +118,11 @@ public class StraightForwardParser implements CSVParser {
 
     @Override
     public Stream<CSVRecord> parse(InputStream is) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Stream<CSVRecord> parse(ByteArraySource bas) {
         throw new UnsupportedOperationException();
     }
 }

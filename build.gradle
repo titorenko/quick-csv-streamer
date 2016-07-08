@@ -23,12 +23,12 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.11'
 	    
     jmh "commons-io:commons-io:2.4"    
-    jmh "net.sf.opencsv:opencsv:2.3"
+    jmh "com.opencsv:opencsv:3.8"
 }
 
 jmh {
     include = '.*BenchmarkParserAndMapperInMemory.*' 
-    jmhVersion = '1.8'
+    jmhVersion = '1.12'
     jvmArgsAppend = '-Xmx1g -XX:+AggressiveOpts'     
 }
 

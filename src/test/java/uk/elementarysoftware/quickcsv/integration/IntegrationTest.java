@@ -24,7 +24,7 @@ public class IntegrationTest {
         Stream<City> s1 = new StraightForwardParser().parse(inputDos).map(City.MAPPER);
         Object[] expected = s1.toArray();
         for (int i = 0; i < bufferSizesToTest.length; i++) {
-            Stream<City> s2 = CSVParserBuilder.aParser().usingBufferSize(bufferSizesToTest[i]).build().parse(inputDos).map(City.MAPPER);
+            Stream<City> s2 = CSVParserBuilder.aParser(City.MAPPER).usingBufferSize(bufferSizesToTest[i]).build().parse(inputDos);
             assertArrayEquals(expected, s2.toArray());
         }
     }
@@ -32,14 +32,14 @@ public class IntegrationTest {
     @Test
     public void testSingleThreaded() throws Exception {
         Stream<City> s1 = new StraightForwardParser().parse(inputDos).map(City.MAPPER);
-        Stream<City> s2 = CSVParserBuilder.aParser().build().parse(inputDos).sequential().map(City.MAPPER);
+        Stream<City> s2 = CSVParserBuilder.aParser(City.MAPPER).build().parse(inputDos).sequential();
         assertArrayEquals(s1.toArray(), s2.sequential().toArray());
     }
     
     @Test
     public void testDosVsUnix() throws Exception {
-        Stream<City> s1 = CSVParserBuilder.aParser().build().parse(inputUnix).map(City.MAPPER);
-        Stream<City> s2 = CSVParserBuilder.aParser().build().parse(inputDos).map(City.MAPPER);
+        Stream<City> s1 = CSVParserBuilder.aParser(City.MAPPER).build().parse(inputUnix);
+        Stream<City> s2 = CSVParserBuilder.aParser(City.MAPPER).build().parse(inputDos);
         assertArrayEquals(s1.toArray(), s2.sequential().toArray());
     }
     
