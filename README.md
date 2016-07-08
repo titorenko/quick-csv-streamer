@@ -98,6 +98,3 @@ License
 Library is licensed under the terms of [GPL v2.0 license](http://www.gnu.org/licenses/gpl-2.0.html).
         
 
-
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/titorenko/quick-csv-streamer/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
-
