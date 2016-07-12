@@ -105,7 +105,7 @@ public class CSVParserBuilder<T, K extends Enum<K>> {
 
     /**
      * Use custom failed record handler to handle exceptions raised during mapping from CSVRecord to T. 
-     * @param errorHandler
+     * @param handler - exception handler
      * @return this parser builder
      */
     public CSVParserBuilder<T, K> usingMappingExceptionHandler(ExceptionHandler handler) {
@@ -115,7 +115,7 @@ public class CSVParserBuilder<T, K extends Enum<K>> {
     
     /**
      * Use custom error handler to handle exceptions raised after actual parsing in further stages of the stream. 
-     * @param errorHandler
+     * @param handler - exception handler
      * @return this parser builder
      */
     public CSVParserBuilder<T, K> usingConsumerExceptionHandler(ExceptionHandler handler) {
