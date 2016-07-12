@@ -1,6 +1,6 @@
 package uk.elementarysoftware.quickcsv.parser;
 
-import uk.elementarysoftware.quickcsv.api.Field;
+import uk.elementarysoftware.quickcsv.api.CSVParserBuilder.CSVFileMetadata;
 import uk.elementarysoftware.quickcsv.tuples.Pair;
 
 
@@ -38,9 +38,9 @@ public interface ByteSlice {
     /**
      * Returns next field and advances to next field. Returns null when end of line or end of slice is reached.
      */
-    public Field nextField(final char c);
+    public ByteArrayField nextField(final char c);
     
-    public Field nextField(final char c, final char quote);
+    public ByteArrayField nextField(final char c, final char quote);
 
     public int size();
     
@@ -48,6 +48,26 @@ public interface ByteSlice {
 
     default public boolean isEmpty() { 
         return !hasMoreData();
+    }
+
+    /**
+     * String representation of current line. Mainly for debug purposes, can return broken line when in composite slice.
+     * @return current line
+     */
+    public String currentLine();
+    
+    default public void skipField(CSVFileMetadata metadata) {
+        if (metadata.quote.isPresent()) 
+            skipUntil(metadata.separator, metadata.quote.get());
+        else
+            skipUntil(metadata.separator);
+    }
+    
+    default public ByteArrayField getNextField(CSVFileMetadata metadata) {
+        if (metadata.quote.isPresent()) 
+            return nextField(metadata.separator, metadata.quote.get());
+        else
+            return nextField(metadata.separator);
     }
 }
 
@@ -95,6 +115,14 @@ class SingleByteSlice implements ByteSlice {
         return frontTrim();
     }
     
+    public String currentLine() {
+        int startIdx = currentIndex;
+        for(; startIdx > start && buffer[startIdx]!=CR && buffer[startIdx]!=LF; startIdx--);
+        int endIdx = currentIndex;
+        for(; endIdx < end && buffer[endIdx]!=CR && buffer[endIdx]!=LF; endIdx++);
+        return new String(buffer, startIdx, endIdx - startIdx);
+    }
+    
     public Pair<ByteSlice, ByteSlice> splitOnLastLineEnd() {
         int i = end-1;
         for (;i >=currentIndex && buffer[i] != LF; i--);
@@ -132,7 +160,7 @@ class SingleByteSlice implements ByteSlice {
         return isFound;
     }
 
-    public Field nextField(final char c) {
+    public ByteArrayField nextField(final char c) {
         int startIndex = currentIndex;
         int endIndex = currentIndex;
         while(currentIndex < end) {
@@ -153,7 +181,7 @@ class SingleByteSlice implements ByteSlice {
     }
     
     @Override
-    public Field nextField(char c, char q) {
+    public ByteArrayField nextField(char c, char q) {
         boolean inQuote = currentIndex < buffer.length && buffer[currentIndex] == q;
         if (!inQuote) return nextField(c);
         currentIndex++;
@@ -255,7 +283,12 @@ class CompositeByteSlice implements ByteSlice {
     }
 
     @Override
-    public Field nextField(char c) {
+    public String currentLine() {
+        return prefix.isEmpty() ? suffix.currentLine() : prefix.currentLine();
+    }
+
+    @Override
+    public ByteArrayField nextField(char c) {
         if (prefix.isEmpty()) return suffix.nextField(c);//TODO: state machine ~ 5%
         int startIndex = currentIndex();
         int endIndex = currentIndex();
@@ -276,7 +309,7 @@ class CompositeByteSlice implements ByteSlice {
     }
     
     @Override
-    public Field nextField(char c, char quote) {
+    public ByteArrayField nextField(char c, char quote) {
         if (prefix.isEmpty()) return suffix.nextField(c, quote);
         boolean inQuote = hasMoreData() && currentByte() == quote;
         if (!inQuote) return nextField(c);
@@ -300,7 +333,7 @@ class CompositeByteSlice implements ByteSlice {
         return createField(startIndex, endIndex, quote);
     }
 
-    private Field createField(int startIndex, int endIndex, Character quote) {
+    private ByteArrayField createField(int startIndex, int endIndex, Character quote) {
         if (startIndex >= prefix.end) {
             suffixFieldTemplateObject.modifyBounds(startIndex - prefix.end, endIndex - prefix.end, quote);
             return suffixFieldTemplateObject;

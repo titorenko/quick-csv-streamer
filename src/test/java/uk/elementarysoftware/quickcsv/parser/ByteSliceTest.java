@@ -41,6 +41,7 @@ public class ByteSliceTest {
     @Test
     public void testSingleSlice() {
         ByteSlice slice = ByteSlice.wrap(FIELDS22.getBytes());
+        assertEquals("field11,field12", slice.currentLine());
         List<Field> fields = getFields(slice);
         assertArrayEquals(new String[] {"field11","field12","field21","field22"}, fields.stream().map(f -> f.asString()).toArray());
     }

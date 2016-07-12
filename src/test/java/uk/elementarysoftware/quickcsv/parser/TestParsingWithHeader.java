@@ -1,5 +1,8 @@
 package uk.elementarysoftware.quickcsv.parser;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -7,11 +10,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 import uk.elementarysoftware.quickcsv.api.CSVParserBuilder;
 import uk.elementarysoftware.quickcsv.api.StandardMappers;
 import uk.elementarysoftware.quickcsv.sampledomain.City;
+import uk.elementarysoftware.quickcsv.sampledomain.City2;
 
 public class TestParsingWithHeader {
 	
@@ -24,26 +27,25 @@ public class TestParsingWithHeader {
 	};
 
 	@Test
-	public void testSequential() throws Exception {//TODO: fixme, update docs and header handling. update version of opencsv and results in docs
-													//think of an elegant way of handling not parsing stugg
-		Stream<City> cities = CSVParserBuilder.aParser(City.MAPPER).build().parse(input)
-				.sequential().skip(1);
-		String[] actual = cities.map(c -> c.toString()).toArray(String[]::new);
-		assertArrayEquals(expected, actual);
-	}
-
-	@Test
-	public void testSequentialViaAPI() throws Exception {
-		Stream<City> cities = CSVParserBuilder.aParser(City.MAPPER)
+	public void testSequential() throws Exception {
+		Stream<City> cities = CSVParserBuilder.aParser(City.MAPPER).usingMappingExceptionHandler((ex, r) -> {})
 				.build().parse(input).sequential();
 		String[] actual = cities.map(c -> c.toString()).toArray(String[]::new);
 		assertArrayEquals(expected, actual);
 	}
-
+	
+	@Test
+    public void testSequentialWithEnumApi() throws Exception {
+        Stream<City2> cities = CSVParserBuilder.aParser(City2.MAPPER, City2.Fields.class) 
+                .build().parse(input).sequential();
+        String[] actual = cities.map(c -> c.toString()).toArray(String[]::new);
+        assertArrayEquals(expected, actual);
+    }
+	
 	@Test
 	public void testParallel() throws Exception {
-		Stream<City> cities = CSVParserBuilder.aParser(City.MAPPER)
-				.build().parse(input).parallel().skip(1);
+		Stream<City> cities = CSVParserBuilder.aParser(City.MAPPER).usingMappingExceptionHandler((ex, r) -> {})
+				.build().parse(input).parallel();
 		String[] actual = cities.map(c -> c.toString()).toArray(String[]::new);
 		assertArrayEquals(expected, actual);
 	}

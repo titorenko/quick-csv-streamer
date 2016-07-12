@@ -7,9 +7,9 @@ import uk.elementarysoftware.quickcsv.decoder.Decoder;
 
 public class ByteArrayField implements Field {
     
-    private Decoder decoder = new Decoder();
+    private final Decoder decoder = new Decoder();
 
-    private final byte[] buffer;
+    private byte[] buffer;
     private int start;
     private int end;
     private Character quote;
@@ -81,6 +81,13 @@ public class ByteArrayField implements Field {
         this.start = start;
         this.end = end;
         this.quote = quote;        
+    }
+    
+    public void initFrom(ByteArrayField other) {
+        this.start = other.start;
+        this.end = other.end;
+        this.buffer = other.buffer;
+        this.quote = other.quote;
     }
     
     @Override

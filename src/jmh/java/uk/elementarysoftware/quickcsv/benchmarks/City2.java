@@ -1,27 +1,30 @@
-package uk.elementarysoftware.quickcsv.sampledomain;
+package uk.elementarysoftware.quickcsv.benchmarks;
 
 import java.util.function.Function;
 
-import uk.elementarysoftware.quickcsv.api.CSVRecord;
+import uk.elementarysoftware.quickcsv.api.CSVRecordWithHeader;
 
-public class City {
+public class City2 {
     
-    public static final Function<CSVRecord, City> MAPPER = City::new;
-    
-    private static final int CITY_INDEX = 2;
+	public static enum Fields {
+		AccentCity,
+        Latitude,
+        Longitude,
+        Population
+    }
+	
+    public static final Function<CSVRecordWithHeader<Fields>, City2> MAPPER = City2::new;
     
     private final String city;
     private final int population; 
     private final double latitude;
     private final double longitude;
     
-    public City(CSVRecord r) {
-        r.skipFields(CITY_INDEX);
-        this.city  = r.getNextField().asString();
-        r.skipField();
-        this.population = r.getNextField().asInt();
-        this.latitude = r.getNextField().asDouble();
-        this.longitude = r.getNextField().asDouble();
+    public City2(CSVRecordWithHeader<Fields> r) {
+        this.city  = r.getField(Fields.AccentCity).asString();
+        this.population = r.getField(Fields.Population).asInt();
+        this.latitude = r.getField(Fields.Latitude).asDouble();
+        this.longitude = r.getField(Fields.Longitude).asDouble();
     }
     
     public String getCity() {
@@ -62,7 +65,7 @@ public class City {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        City other = (City) obj;
+        City2 other = (City2) obj;
         if (city == null) {
             if (other.city != null)
                 return false;
