@@ -1,7 +1,7 @@
 package uk.elementarysoftware.quickcsv.decoder.doubles;
 
 
-class QuickDoubleParser implements DoubleParser {
+public class QuickDoubleParser implements DoubleParser {
 
 	private static final int RADIX = 10;
 	private static final int DOT = '.'-'0';

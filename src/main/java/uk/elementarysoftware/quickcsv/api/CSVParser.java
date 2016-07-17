@@ -6,6 +6,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.stream.Stream;
 
+/**
+ * CSV Parser can parse input such as {@link InputStream} or more generally {@link ByteArraySource} to Stream&lt;T&gt;.
+ * 
+ * 
+ * @param <T> - the type of the parsing result
+ */
 public interface CSVParser<T> {
     
     public default Stream<T> parse(File file) throws IOException {

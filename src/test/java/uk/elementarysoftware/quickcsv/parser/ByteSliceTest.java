@@ -1,16 +1,19 @@
 package uk.elementarysoftware.quickcsv.parser;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
 
+import uk.elementarysoftware.quickcsv.api.ByteArraySource.ByteArrayChunk;
 import uk.elementarysoftware.quickcsv.api.Field;
-import uk.elementarysoftware.quickcsv.parser.ByteSlice;
-import uk.elementarysoftware.quickcsv.parser.CompositeByteSlice;
-import uk.elementarysoftware.quickcsv.tuples.Pair;
+import uk.elementarysoftware.quickcsv.functional.Pair;
 
 public class ByteSliceTest {
     
@@ -20,7 +23,7 @@ public class ByteSliceTest {
     @Test
     public void testSplitOnLastLineEnd() {
         String content = "line1\nline2\nlastline";
-        ByteSlice slice = ByteSlice.wrap(content.getBytes());
+        ByteSlice slice = sliceFor(content.getBytes());
         assertEquals(content, slice.toString());
         Pair<ByteSlice, ByteSlice> sliced = slice.splitOnLastLineEnd();
         assertEquals("line1\nline2\n", sliced.first.toString());
@@ -31,7 +34,7 @@ public class ByteSliceTest {
     @Test
     public void testSplitOnLastLineEndWithSkip() {
         String content = "line1\nline2\nlastline";
-        ByteSlice slice = ByteSlice.wrap(content.getBytes());
+        ByteSlice slice = sliceFor(content.getBytes());
         slice.nextLine();
         Pair<ByteSlice, ByteSlice> sliced = slice.splitOnLastLineEnd();
         assertEquals("line2\n", sliced.first.toString());
@@ -40,7 +43,7 @@ public class ByteSliceTest {
     
     @Test
     public void testSingleSlice() {
-        ByteSlice slice = ByteSlice.wrap(FIELDS22.getBytes());
+        ByteSlice slice = sliceFor(FIELDS22.getBytes());
         assertEquals("field11,field12", slice.currentLine());
         List<Field> fields = getFields(slice);
         assertArrayEquals(new String[] {"field11","field12","field21","field22"}, fields.stream().map(f -> f.asString()).toArray());
@@ -48,7 +51,7 @@ public class ByteSliceTest {
     
     @Test
     public void testSingleSliceFieldSplitWithQuote() {
-        ByteSlice slice = ByteSlice.wrap("f1,\"f2,f2\",f3,\"f\"\"4\"".getBytes());
+        ByteSlice slice = sliceFor("f1,\"f2,f2\",f3,\"f\"\"4\"".getBytes());
         assertEquals("f1", slice.nextField(',', '"').asString());
         assertEquals("f2,f2", slice.nextField(',', '"').asString());
         assertEquals("f3", slice.nextField(',', '"').asString());
@@ -61,7 +64,7 @@ public class ByteSliceTest {
         for (int splitIndex = 0; splitIndex < content.length(); splitIndex++) {
             String prefix = content.substring(0, splitIndex);
             String suffix = content.substring(splitIndex);
-            ByteSlice join = ByteSlice.join(ByteSlice.wrap(prefix.getBytes()), ByteSlice.wrap(suffix.getBytes()));
+            ByteSlice join = ByteSlice.join(sliceFor(prefix.getBytes()), sliceFor(suffix.getBytes()));
             assertEquals(content, join.toString());
             List<Field> fields = getFieldsQuoted(join);
             assertArrayEquals(
@@ -73,7 +76,7 @@ public class ByteSliceTest {
     
     @Test
     public void testEmptyFieldHandling() {
-        ByteSlice slice = ByteSlice.wrap("f1,,f2".getBytes());
+        ByteSlice slice = sliceFor("f1,,f2".getBytes());
         assertEquals("f1", slice.nextField(',', '"').asString());
         assertEquals("", slice.nextField(',', '"').asString());
         assertEquals("f2", slice.nextField(',', '"').asString());
@@ -82,14 +85,14 @@ public class ByteSliceTest {
     
     @Test
     public void testSkipSlice() {
-        ByteSlice slice = ByteSlice.wrap(FIELDS22.getBytes());
+        ByteSlice slice = sliceFor(FIELDS22.getBytes());
         slice.skipUntil(',');
         assertEquals("field12", slice.nextField(',').asString());
     }
     
     @Test
     public void testSkipSliceQuoted() {
-        ByteSlice slice = ByteSlice.wrap("f1,\"f2,f2\",f3".getBytes());
+        ByteSlice slice = sliceFor("f1,\"f2,f2\",f3".getBytes());
         slice.skipUntil(',', '"');
         slice.skipUntil(',', '"');
         assertEquals("f3", slice.nextField(',', '"').asString());
@@ -102,7 +105,7 @@ public class ByteSliceTest {
         int splitIndex = 3;
         String prefix = content.substring(0, splitIndex);
         String suffix = content.substring(splitIndex);
-        CompositeByteSlice slice = (CompositeByteSlice) ByteSlice.join(ByteSlice.wrap(prefix.getBytes()), ByteSlice.wrap(suffix.getBytes()));
+        CompositeByteSlice slice = (CompositeByteSlice) ByteSlice.join(sliceFor(prefix.getBytes()), sliceFor(suffix.getBytes()));
         byte[] result = new byte[slice.size()];
         for (int i = 0; i < result.length; i++) {
             result[i] = slice.currentByte();
@@ -117,7 +120,7 @@ public class ByteSliceTest {
         for (int splitIndex = 0; splitIndex < content.length(); splitIndex++) {
             String prefix = content.substring(0, splitIndex);
             String suffix = content.substring(splitIndex);
-            ByteSlice join = ByteSlice.join(ByteSlice.wrap(prefix.getBytes()), ByteSlice.wrap(suffix.getBytes()));
+            ByteSlice join = ByteSlice.join(sliceFor(prefix.getBytes()), sliceFor(suffix.getBytes()));
             assertEquals(content, join.toString());
             List<Field> fields = getFields(join);
             assertArrayEquals(
@@ -133,7 +136,7 @@ public class ByteSliceTest {
         for (int splitIndex = 0; splitIndex < content.length(); splitIndex++) {
             String prefix = content.substring(0, splitIndex);
             String suffix = content.substring(splitIndex);
-            ByteSlice join = ByteSlice.join(ByteSlice.wrap(prefix.getBytes()), ByteSlice.wrap(suffix.getBytes()));
+            ByteSlice join = ByteSlice.join(sliceFor(prefix.getBytes()), sliceFor(suffix.getBytes()));
             assertTrue(join.skipUntil(','));
             assertEquals("field12", join.nextField(',').asString());
             assertTrue(join.nextLine());
@@ -142,11 +145,15 @@ public class ByteSliceTest {
             assertEquals("field23", join.nextField(',').asString());
         }
     }
+    
+    private ByteSlice sliceFor(byte[] bytes) {
+        return ByteSlice.wrap(new ByteArrayChunk(bytes, bytes.length, false, (b) -> {}), Charset.defaultCharset());
+    }
 
     private List<Field> getFields(ByteSlice bs) {
         List<Field> result = new ArrayList<>();
         while(true) {
-            Field f = bs.nextField(',');
+            ByteArrayField f = bs.nextField(',');
             if (f == null) {
                 if (!bs.nextLine()) break;
             } else {
@@ -159,7 +166,7 @@ public class ByteSliceTest {
     private List<Field> getFieldsQuoted(ByteSlice bs) {
         List<Field> result = new ArrayList<>();
         while(true) {
-            Field f = bs.nextField(',', '"');
+            ByteArrayField f = bs.nextField(',', '"');
             if (f == null) break;
             result.add(f.clone());
         }

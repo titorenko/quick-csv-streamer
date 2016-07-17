@@ -1,28 +1,30 @@
 package uk.elementarysoftware.quickcsv.parser;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 
 import uk.elementarysoftware.quickcsv.api.Field;
 import uk.elementarysoftware.quickcsv.decoder.Decoder;
 
 public class ByteArrayField implements Field {
     
-    private final Decoder decoder = new Decoder();
+    private final Decoder decoder;
 
     private byte[] buffer;
     private int start;
     private int end;
-    private Character quote;
+    private Character quote; //if not null indicates that value was actually quoted
 
-    public ByteArrayField(byte[] buffer, int startIndex, int endIndex) {
-        this(buffer, startIndex, endIndex, null);
+    public ByteArrayField(byte[] buffer, int startIndex, int endIndex, Charset charset) {
+        this(buffer, startIndex, endIndex, charset, null);
     }
 
-    public ByteArrayField(byte[] buffer, int startIndex, int endIndex, Character quote) {
+    public ByteArrayField(byte[] buffer, int startIndex, int endIndex, Charset charset, Character quote) {
         this.buffer = buffer;
         this.start = startIndex;
         this.end = endIndex;
         this.quote = quote;
+        this.decoder = new Decoder(charset);
     }
 
     @Override
@@ -34,7 +36,7 @@ public class ByteArrayField implements Field {
     public String asString() {
         String result = decoder.decodeToString(buffer, start, end - start);
         if (quote != null) {
-            return result.replace(new StringBuffer().append(quote).append(quote), new StringBuffer().append(quote)); //TODO: optimize
+            return result.replace(new StringBuffer().append(quote).append(quote), new StringBuffer().append(quote)); //TODO: optimize and add more flexible escape character
         } else {
             return result;
         }
@@ -84,15 +86,15 @@ public class ByteArrayField implements Field {
     }
     
     public void initFrom(ByteArrayField other) {
+        this.buffer = other.buffer;
         this.start = other.start;
         this.end = other.end;
-        this.buffer = other.buffer;
         this.quote = other.quote;
     }
     
     @Override
     public Field clone() {
-        return new ByteArrayField(buffer, start, end, quote);
+        return new ByteArrayField(buffer, start, end, decoder.getCharset(), quote);
     }
 
     @Override

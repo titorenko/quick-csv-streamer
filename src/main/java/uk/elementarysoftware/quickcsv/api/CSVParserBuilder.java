@@ -1,5 +1,6 @@
 package uk.elementarysoftware.quickcsv.api;
 
+import java.nio.charset.Charset;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
@@ -7,6 +8,12 @@ import java.util.function.Function;
 import uk.elementarysoftware.quickcsv.parser.FieldSubsetView;
 import uk.elementarysoftware.quickcsv.parser.QuickCSVParser;
 
+/**
+ * CSV Parser builder, use this class to construct {@link CSVParser}.
+ * 
+ * @param <T> - type of object that each record of the CSV data will be mapped to
+ * @param <K> - type of enumeration that is used to specify fields to be parsed, only relevant for header-aware parser. 
+ */
 public class CSVParserBuilder<T, K extends Enum<K>> {
     
     private int bufferSize = 512*1024;
@@ -18,9 +25,7 @@ public class CSVParserBuilder<T, K extends Enum<K>> {
 	private Function<CSVRecordWithHeader<K>, T> recordWithHeaderMapper;
 	private FieldSubsetView<K> subsetView = null;
 	
-	private ExceptionHandler mappingExceptionHandler  = (ex, row) -> {throw new RuntimeException("Failed to parse: "+row, ex);};
-
-    private ExceptionHandler consumerExceptionHandler = (ex, row) -> {throw ex;};
+	private Charset charset = Charset.defaultCharset();
     
     private CSVParserBuilder() {
 	}
@@ -28,10 +33,13 @@ public class CSVParserBuilder<T, K extends Enum<K>> {
     /**
      * Create new parser using supplied mapping function. 
      * 
-     * Mapping function can not store reference to CSVRecord object,  it needs to be a pure function that create new instance of T. 
-     * CSVRecord could be mutated by the parser when next record is processed.
+     * Mapping function can not store reference to {@link CSVRecord} object, 
+     * it needs to be a pure function that creates new instance of T. 
+     * CSVRecord could be mutated by the parser when next field or record are processed.
      * 
      * @param mapper - mapping function from CSVRecord to T
+     * @param <T> - type of object that each record of the CSV data will be mapped to
+     * @param <K> - ignored
      * @return this parser builder
      */
 	public static <T, K extends Enum<K>> CSVParserBuilder<T, K> aParser(Function<CSVRecord, T> mapper) {
@@ -39,6 +47,22 @@ public class CSVParserBuilder<T, K extends Enum<K>> {
         builder.recordMapper = mapper;
         return builder;
     }
+	
+	/**
+	 * Create new header-aware parser using supplied mapping function. 
+	 * 
+	 * Mapping function can not store reference to {@link CSVRecordWithHeader} object, 
+	 * it needs to be a pure function that create new instance of T.
+	 *  
+     * CSVRecordWithHeader could be mutated by the parser when next record is processed.
+	 * 
+	 * @param mapper - mapping function from CSVRecordWithHeader to T
+	 * @param fields - enumeration specifying fields that should be parsed
+	 * @param <T> - type of object that each record of the CSV data will be mapped to
+     * @param <K> - type of enumeration that is used to specify fields to be parsed
+     * 
+	 * @return this parser builder
+	 */
 	
 	public static <T, K extends Enum<K>> CSVParserBuilder<T, K> aParser(Function<CSVRecordWithHeader<K>, T> mapper, Class<K> fields) {
         CSVParserBuilder<T, K> builder = new CSVParserBuilder<T, K>();
@@ -83,6 +107,7 @@ public class CSVParserBuilder<T, K extends Enum<K>> {
     
     /**
      * Use specified characters as field separator and quote character.
+     * Quote character can be escaped by preceding it with another quote character.
      * @param separator - field separator character
      * @param quote - quote character
      * @return this parser builder
@@ -104,29 +129,34 @@ public class CSVParserBuilder<T, K extends Enum<K>> {
     
 
     /**
-     * Use custom failed record handler to handle exceptions raised during mapping from CSVRecord to T. 
-     * @param handler - exception handler
+     * Specifies charset to use during parsing. By default Charset.defaultCharset() is used.
+     * This parser only supports charset that represent separators and digits as single bytes.
+     * @param charset - charset to use during parsing
      * @return this parser builder
      */
-    public CSVParserBuilder<T, K> usingMappingExceptionHandler(ExceptionHandler handler) {
-        this.mappingExceptionHandler = handler;
+    public CSVParserBuilder<T, K> usingCharset(Charset charset) {
+        this.charset = charset;
         return this;
     }
     
     /**
-     * Use custom error handler to handle exceptions raised after actual parsing in further stages of the stream. 
-     * @param handler - exception handler
+     * Specifies charset name to use during parsing. By default Charset.defaultCharset() is used.
+     * This parser only supports charset that represent separators and digits as single bytes.
+     * @param charsetName - charset to use during parsing
      * @return this parser builder
      */
-    public CSVParserBuilder<T, K> usingConsumerExceptionHandler(ExceptionHandler handler) {
-        this.consumerExceptionHandler = handler;
-        return this;
+    public CSVParserBuilder<T, K> usingCharset(String charsetName) {
+        return usingCharset(Charset.forName(charsetName));
     }
     
+    /**
+     * Construct parser using current setting
+     * @return CSV Parser
+     */
     public CSVParser<T> build() {
         return subsetView == null ? 
-        		new QuickCSVParser<T,K>(bufferSize, metadata, recordMapper, mappingExceptionHandler, consumerExceptionHandler) :
-    			new QuickCSVParser<T,K>(bufferSize, metadata, recordWithHeaderMapper, subsetView, mappingExceptionHandler, consumerExceptionHandler);
+        		new QuickCSVParser<T,K>(bufferSize, metadata, recordMapper, charset) :
+    			new QuickCSVParser<T,K>(bufferSize, metadata, recordWithHeaderMapper, subsetView, charset);
     }
     
     public static class CSVFileMetadata {

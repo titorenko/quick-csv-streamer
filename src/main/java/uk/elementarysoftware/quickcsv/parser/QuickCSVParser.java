@@ -1,6 +1,7 @@
 package uk.elementarysoftware.quickcsv.parser;
 
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Optional;
 import java.util.Spliterator;
@@ -11,42 +12,37 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import uk.elementarysoftware.quickcsv.api.ByteArraySource;
-import uk.elementarysoftware.quickcsv.api.ByteArraySource.ByteArrayItem;
+import uk.elementarysoftware.quickcsv.api.ByteArraySource.ByteArrayChunk;
 import uk.elementarysoftware.quickcsv.api.CSVParser;
 import uk.elementarysoftware.quickcsv.api.CSVParserBuilder.CSVFileMetadata;
+import uk.elementarysoftware.quickcsv.functional.Pair;
 import uk.elementarysoftware.quickcsv.api.CSVRecord;
 import uk.elementarysoftware.quickcsv.api.CSVRecordWithHeader;
-import uk.elementarysoftware.quickcsv.api.ExceptionHandler;
 import uk.elementarysoftware.quickcsv.api.Field;
-import uk.elementarysoftware.quickcsv.tuples.Pair;
 
 public class QuickCSVParser<T, K extends Enum<K>> implements CSVParser<T> {
 
     private final CSVFileMetadata metadata;
     private final int bufferSize;
 	private final Function<CSVRecord, T> mapper;
-	private final ExceptionHandler mappingExceptionHandler;
-    private final ExceptionHandler consumerExceptionHandler;
     private final Optional<FieldSubsetView<K>> fieldSubsetView;
+    private final Charset charset;
 
     public QuickCSVParser(int bufferSize, CSVFileMetadata metadata, Function<CSVRecordWithHeader<K>, T> mapper, 
-    		FieldSubsetView<K> fieldSubsetView, ExceptionHandler mappingExceptionHandler, ExceptionHandler consumerExceptionHandler) {
+    		FieldSubsetView<K> fieldSubsetView, Charset charset) {
 	    this.metadata = metadata;
 	    this.bufferSize = bufferSize;
 	    this.mapper = cast(mapper);
 	    this.fieldSubsetView = Optional.of(fieldSubsetView);
-	    this.mappingExceptionHandler = mappingExceptionHandler;
-	    this.consumerExceptionHandler = consumerExceptionHandler;
+	    this.charset = charset;
 	}
     
-    public QuickCSVParser(int bufferSize, CSVFileMetadata metadata, Function<CSVRecord, T> mapper, 
-    		ExceptionHandler mappingExceptionHandler, ExceptionHandler consumerExceptionHandler) {
+    public QuickCSVParser(int bufferSize, CSVFileMetadata metadata, Function<CSVRecord, T> mapper, Charset charset) {
 	    this.metadata = metadata;
 	    this.bufferSize = bufferSize;
 	    this.mapper = mapper;
 	    this.fieldSubsetView = Optional.empty();
-	    this.mappingExceptionHandler = mappingExceptionHandler;
-	    this.consumerExceptionHandler = consumerExceptionHandler;
+	    this.charset = charset;
 	}
     
 	@SuppressWarnings("unchecked")
@@ -60,7 +56,7 @@ public class QuickCSVParser<T, K extends Enum<K>> implements CSVParser<T> {
         BufferPool pool = new BufferPool(bufferSize);
         return parse(new InputStreamToByteArraySourceAdapter(is, pool));
     }
-
+    
     @Override
     public Stream<T> parse(ByteArraySource bas) {
         return StreamSupport.stream(new SplittingSpliterator(bas), true);
@@ -84,16 +80,7 @@ public class QuickCSVParser<T, K extends Enum<K>> implements CSVParser<T> {
             boolean advanced = sequentialSplitterator.tryAdvance(action);
             if (advanced) return true;
             if (isEndReached) return false;
-
-            ByteSlice bareSlice = nextSlice();
-            ByteSlice nextSlice;
-            if (isEndReached) {
-                nextSlice = ByteSlice.join(prefix, bareSlice);
-            } else {
-                Pair<ByteSlice, ByteSlice> sliced = bareSlice.splitOnLastLineEnd();
-                nextSlice = ByteSlice.join(prefix, sliced.first);
-                this.prefix = sliced.second;
-            }
+            ByteSlice nextSlice = nextSlice();
             if (!nextSlice.hasMoreData()) return false;
             this.sequentialSplitterator = sliceSpliterator(nextSlice);
             return tryAdvance(action);
@@ -102,26 +89,34 @@ public class QuickCSVParser<T, K extends Enum<K>> implements CSVParser<T> {
         @Override
         public Spliterator<T> trySplit() {
             if (isEndReached) return null;
-            ByteSlice bareSlice = nextSlice();
-            ByteSlice nextSlice;
-            if (isEndReached) {
-                nextSlice = ByteSlice.join(prefix, bareSlice);
-            } else {
-                Pair<ByteSlice, ByteSlice> sliced = bareSlice.splitOnLastLineEnd();
-                nextSlice = ByteSlice.join(prefix, sliced.first);
-                this.prefix = sliced.second;
-            }
+            ByteSlice nextSlice = nextSlice();
             if (!nextSlice.hasMoreData()) return null;
             return sliceSpliterator(nextSlice);
         }
-
+        
         private ByteSlice nextSlice() {
+            ByteSlice bareSlice = nextBareSlice();
+            bareSlice.incrementUse();
+            if (isEndReached) {
+                return ByteSlice.join(prefix, bareSlice);
+            } else {
+                Pair<ByteSlice, ByteSlice> sliced = bareSlice.splitOnLastLineEnd();
+                ByteSlice result = ByteSlice.join(prefix, sliced.first);
+                this.prefix = sliced.second;
+                bareSlice.incrementUse();
+                return result;
+            }
+        }
+
+        private ByteSlice nextBareSlice() {
             try {
-                ByteArrayItem it = bas.getNext();
+                ByteArrayChunk it = bas.getNext();
                 this.isEndReached = it.isLast();
-                ByteSlice slice = ByteSlice.wrap(it.getData(), it.getLength());
+                ByteSlice slice = ByteSlice.wrap(it, charset);
                 if (fieldSubsetView.isPresent()) fieldSubsetView.get().onSlice(slice, metadata);
                 return slice;
+            } catch (RuntimeException e) {
+                throw e;
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -152,23 +147,17 @@ public class QuickCSVParser<T, K extends Enum<K>> implements CSVParser<T> {
 
         @Override
         public boolean tryAdvance(Consumer<? super T> action) {
-            if (!slice.hasMoreData())
+            if (!slice.hasMoreData()) {
+                slice.decremenentUse();
                 return false;
+            }
             advance(action);
             return true;
         }
 
         protected void advance(Consumer<? super T> action) {
-            try {
             T t = mapper.apply(this);
-                try {
             action.accept(t);
-                } catch (RuntimeException e) {
-                    consumerExceptionHandler.onException(e, this.slice.currentLine());
-                }
-            } catch (RuntimeException e) {
-                mappingExceptionHandler.onException(e, this.slice.currentLine());
-            }
             slice.nextLine();
         }
 
@@ -208,69 +197,40 @@ public class QuickCSVParser<T, K extends Enum<K>> implements CSVParser<T> {
     class LensingByteSliceSpliterator extends ByteSliceSpliterator implements CSVRecordWithHeader<K> {
 
         private final FieldSubsetView<K> view;
-        private int viewFieldIndex;
         private final ByteArrayField[] fieldTemplates; 
 
         public LensingByteSliceSpliterator(ByteSlice slice) {
             super(slice);
             this.view = fieldSubsetView.get();
-            this.fieldTemplates = new ByteArrayField[view.getFieldIndexes().length];
+            this.fieldTemplates = new ByteArrayField[view.getFieldSubsetSize()];
             for (int i = 0; i < fieldTemplates.length; i++) {
-                fieldTemplates[i] = new ByteArrayField(null, -1, -1);
+                fieldTemplates[i] = new ByteArrayField(null, -1, -1, charset);
             }
         }
         
         @Override
         public boolean tryAdvance(Consumer<? super T> action) {
-            if (!slice.hasMoreData())
+            if (!slice.hasMoreData()) {
+                slice.decremenentUse();
                 return false;
-            this.viewFieldIndex = 0;
+            }
             parseFields();
             super.advance(action);
             return true;
         }
 
         private void parseFields() {
-            int[] fieldIndexes = view.getFieldIndexes();
-            int lastFieldIndex = -1;
-            for (int i = 0; i < fieldIndexes.length; i++) {
-                int idx = fieldIndexes[i];
-                int nSkip = idx - lastFieldIndex - 1;
-                skipSourceFields(nSkip);
-                ByteArrayField field = super.getNextField();
+            int[] skipSchedule = view.getFieldSkipSchedule();
+            for (int i = 0; i < skipSchedule.length; i++) {
+                skipFields(skipSchedule[i]);
+                ByteArrayField field = super.getNextField();//TODO: init into template directly
                 fieldTemplates[i].initFrom(field);
-                lastFieldIndex = idx;
             }
-        }
-        
-        @Override
-        public void skipField() {
-            viewFieldIndex++;
-        }
-        
-        @Override
-        public void skipFields(int nFields) {
-            viewFieldIndex += nFields;
-        }
-        
-        private void skipSourceFields(int nFields) {
-            for (int i = 0; i < nFields; i++) {
-                super.skipField();
-            }
-        }
-        
-        @Override
-        public ByteArrayField getNextField() {
-            return fieldTemplates[view.indexOfInSourceView(viewFieldIndex++)];
         }
 
         @Override
         public Field getField(K fieldName) {
-            try {
-                return fieldTemplates[view.indexOfInSourceView(fieldName)];
-            } catch (RuntimeException e) {
-                throw new RuntimeException("Unknown field: "+fieldName, e);
-            }
+            return fieldTemplates[view.indexOfInSourceView(fieldName.ordinal())];
         }
 
 		@Override

@@ -25,13 +25,6 @@ public class FieldSubsetViewTest {
 	}
 	
 	@Test
-	public void testIndexOfEnumValuesInSourceView() {
-		assertEquals(1, fs.indexOfInSourceView(FieldSubset.C3));
-		assertEquals(2, fs.indexOfInSourceView(FieldSubset.C4));
-		assertEquals(0, fs.indexOfInSourceView(FieldSubset.C1));
-	}
-	
-	@Test
 	public void testIndexOfInSourceView() {
 		assertEquals(1, fs.indexOfInSourceView(0));
 		assertEquals(2, fs.indexOfInSourceView(1));

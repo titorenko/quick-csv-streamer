@@ -3,10 +3,32 @@ package uk.elementarysoftware.quickcsv.sampledomain;
 import java.util.function.Function;
 
 import uk.elementarysoftware.quickcsv.api.CSVRecord;
+import uk.elementarysoftware.quickcsv.api.CSVRecordWithHeader;
+import uk.elementarysoftware.quickcsv.api.Field;
 
 public class City {
     
     public static final Function<CSVRecord, City> MAPPER = City::new;
+    
+    public static class HeaderAwareMapper {
+        
+        public static enum Fields {
+            AccentCity,
+            Latitude,
+            Longitude,
+            Population
+        }
+        
+        public static final Function<CSVRecordWithHeader<Fields>, City> MAPPER = r -> {
+            return new City(
+                r.getField(Fields.AccentCity).asString(),
+                r.getField(Fields.Population).asInt(),
+                r.getField(Fields.Latitude).asDouble(),
+                r.getField(Fields.Longitude).asDouble(),
+                r.getField(Fields.Population).asLong()
+            );
+        };
+    }
     
     private static final int CITY_INDEX = 2;
     
@@ -14,16 +36,27 @@ public class City {
     private final int population; 
     private final double latitude;
     private final double longitude;
+    private final long populationL;
     
     public City(CSVRecord r) {
         r.skipFields(CITY_INDEX);
         this.city  = r.getNextField().asString();
         r.skipField();
-        this.population = r.getNextField().asInt();
+        Field popField = r.getNextField();
+        this.population = popField.asInt();
+        this.populationL = popField.asLong();
         this.latitude = r.getNextField().asDouble();
         this.longitude = r.getNextField().asDouble();
     }
     
+    public City(String city, int population, double latitude, double longitude, long populationL) {
+        this.city = city;
+        this.population = population;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.populationL = populationL;
+    }
+
     public String getCity() {
         return city;
     }
@@ -38,6 +71,10 @@ public class City {
     
     public double getLongitude() {
         return longitude;
+    }
+    
+    public long getPopulationL() {
+        return populationL;
     }
 
     @Override

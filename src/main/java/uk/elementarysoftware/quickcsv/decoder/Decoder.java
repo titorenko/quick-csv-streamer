@@ -1,17 +1,27 @@
 package uk.elementarysoftware.quickcsv.decoder;
 
-import uk.elementarysoftware.quickcsv.decoder.doubles.DoubleParserFactory;
+import java.nio.charset.Charset;
+
+import uk.elementarysoftware.quickcsv.decoder.ints.IntParser;
+import uk.elementarysoftware.quickcsv.decoder.ints.LongParser;
 
 public class Decoder {
 	
-	private uk.elementarysoftware.quickcsv.decoder.doubles.DoubleParser doubleParser;
+	private final uk.elementarysoftware.quickcsv.decoder.doubles.DoubleParser doubleParser;
+    private final Charset charset;
+    private final IntParser intParser;
+    private final LongParser longParser;
 	
-	public Decoder() {
-		doubleParser = DoubleParserFactory.getParser();
+	public Decoder(Charset charset) {
+		this.charset = charset;
+		ParserFactory parserFactory = new ParserFactory();
+		this.doubleParser = parserFactory.getDoubleParser();
+		this.intParser = parserFactory.getIntParser();
+		this.longParser = parserFactory.getLongParser();
 	}
 	
 	public String decodeToString(byte[] buffer, int offset, int length) {
-	    return new String(buffer, offset, length);
+	    return new String(buffer, offset, length, charset);
 	}
 
 	public double decodeToDouble(byte[] buffer, int offset, int length) {
@@ -21,11 +31,15 @@ public class Decoder {
 	
 	public int decodeToInt(byte[] buffer, int offset, int length) {
 	    if (length == 0) return 0;
-        return Integer.parseInt(decodeToString(buffer, offset, length));//TODO: optimize me
+	    return intParser.parse(buffer, offset, length);
     }
 
     public long decodeToLong(byte[] buffer, int offset, int length) {
         if (length == 0) return 0L;
-        return Long.parseLong(decodeToString(buffer, offset, length));//TODO: optimize me
+        return longParser.parse(buffer, offset, length);
+    }
+
+    public Charset getCharset() {
+        return charset;
     }
 }

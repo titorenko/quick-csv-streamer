@@ -3,10 +3,30 @@ package uk.elementarysoftware.quickcsv.benchmarks;
 import java.util.function.Function;
 
 import uk.elementarysoftware.quickcsv.api.CSVRecord;
+import uk.elementarysoftware.quickcsv.api.CSVRecordWithHeader;
 
 public class City {
     
-    public static final Function<CSVRecord, City> MAPPER = (CSVRecord r) -> new City(r);
+    public static final Function<CSVRecord, City> MAPPER = City::new;
+    
+    public static class EnumMapper {
+        
+        public static enum Fields {
+            AccentCity,
+            Population,
+            Latitude,
+            Longitude
+        }
+        
+        public static final Function<CSVRecordWithHeader<Fields>, City> MAPPER = r -> {
+            return new City(
+                    r.getField(Fields.AccentCity).asString(),
+                    r.getField(Fields.Population).asInt(),
+                    r.getField(Fields.Latitude).asDouble(),
+                    r.getField(Fields.Longitude).asDouble()
+            );
+        };
+    }
     
     private static final int CITY_INDEX = 2;
     

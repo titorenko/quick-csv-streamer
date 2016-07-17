@@ -12,7 +12,7 @@ import uk.elementarysoftware.quickcsv.api.CSVParserBuilder.CSVFileMetadata;
  * Provides view on the CSVRecord that focuses on particular subset of fields.
  * 
  * Within the view fields can be accessed by index in order of the subset or by field enumeration K.   
- * @param <K>
+ * @param <K> - enum containing list of fields that form the subset
  */
 public class FieldSubsetView<K extends Enum<K>> {
     
@@ -23,12 +23,11 @@ public class FieldSubsetView<K extends Enum<K>> {
     
     private int[] headerIndexesOfK;
     private int[] parseOrderToSourceOrder;
-    private final Map<K, Integer> kToSourceOrder;
+    private int[] fieldSkipSchedule;
 
     private FieldSubsetView(HeaderSource headerSource, Class<K> fieldSubset) {
         this.headerSource = headerSource;
         this.fieldSubset = fieldSubset;
-        this.kToSourceOrder = new EnumMap<K, Integer>(fieldSubset);//TODO: move to simple array
     }
     
     public static <K extends Enum<K>> FieldSubsetView<K> forExplicitHeader(Class<K> fieldsToSource, String... header) {
@@ -58,13 +57,21 @@ public class FieldSubsetView<K extends Enum<K>> {
         for (K k : fieldSubset.getEnumConstants()) {
             fieldToHeaderIndex.put(k, header.indexOf(k.toString()));
         }
-        parseOrderToSourceOrder = new int[fieldSubset.getEnumConstants().length];
         
+        this.fieldSkipSchedule = new int[headerIndexesOfK.length];
+        int lastFieldIndex = -1;
+        for (int i = 0; i < headerIndexesOfK.length; i++) {
+            int idx = headerIndexesOfK[i];
+            int nSkip = idx - lastFieldIndex - 1;
+            fieldSkipSchedule[i] = nSkip;
+            lastFieldIndex = idx;
+        }
+        
+        parseOrderToSourceOrder = new int[getFieldSubsetSize()];
         K[] ks = fieldSubset.getEnumConstants();
         for (int i = 0; i < ks.length; i++) {
             int headerIdx = fieldToHeaderIndex.get(ks[i]);
             parseOrderToSourceOrder[i] = Arrays.binarySearch(headerIndexesOfK, headerIdx);
-            kToSourceOrder.put(ks[i], parseOrderToSourceOrder[i]);
         }
     }
 
@@ -73,31 +80,35 @@ public class FieldSubsetView<K extends Enum<K>> {
         int[] result = new int[ks.length];
         for (int i = 0; i < result.length; i++) {
             if ((result[i] = header.indexOf(ks[i].toString())) == -1) {
-                throw new RuntimeException("field not found in header: "+ks[i].name());
+                throw new RuntimeException("Field not found in header: "+ks[i].toString());
             }
         }
         Arrays.sort(result);
         return result;
     }
 
+    int[] getFieldIndexes() {
+        return headerIndexesOfK;
+    }
+    
     public Class<K> getFieldSubset() {
 		return fieldSubset;
 	}
-    
-    public int[] getFieldIndexes() {
-        return headerIndexesOfK;
-    }
 
-	public List<String> getHeader() {
+    int[] getFieldSkipSchedule() {
+        return fieldSkipSchedule;
+    }
+    
+	List<String> getHeader() {
 		return headerSource.getHeader();
 	}
 
-    public int indexOfInSourceView(K fieldName) {
-        return kToSourceOrder.get(fieldName);
+    int indexOfInSourceView(int parseIdx) {
+        return parseOrderToSourceOrder[parseIdx];
     }
     
-    public int indexOfInSourceView(int parseIdx) {
-        return parseOrderToSourceOrder[parseIdx];
+    int getFieldSubsetSize() {
+        return fieldSubset.getEnumConstants().length;
     }
     
     public static abstract class HeaderSource {

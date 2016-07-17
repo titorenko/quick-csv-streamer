@@ -18,7 +18,6 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.infra.Blackhole;
-import org.openjdk.jmh.profile.StackProfiler;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
@@ -69,14 +68,14 @@ public class BenchmarkParserAndMapperInMemory {
         Stream<City> stream = parser.parse(new ByteArrayInputStream(state.content));
         stream.forEach(c -> bh.consume(c));
     }
-    
+
     @Benchmark
     public void benchmarkParallelParserEnum(BenchmarkState state, Blackhole bh) {
-        CSVParser<City2> parser = CSVParserBuilder
-        		.aParser(City2.MAPPER, City2.Fields.class)
+        CSVParser<City> parser = CSVParserBuilder
+        		.aParser(City.EnumMapper.MAPPER, City.EnumMapper.Fields.class)
         		.usingExplicitHeader("Country", "City", "AccentCity", "Region", "Population", "Latitude", "Longitude")
         		.build();
-        Stream<City2> stream = parser.parse(new ByteArrayInputStream(state.content));
+        Stream<City> stream = parser.parse(new ByteArrayInputStream(state.content));
         stream.forEach(c -> bh.consume(c));
     }
     
@@ -98,7 +97,7 @@ public class BenchmarkParserAndMapperInMemory {
         Options opt = new OptionsBuilder()
             .include(".*" + BenchmarkParserAndMapperInMemory.class.getSimpleName()+".*")
             //.addProfiler(LinuxPerfAsmProfiler.class)
-            .addProfiler(StackProfiler.class)
+            //.addProfiler(StackProfiler.class)
             .build();
         new Runner(opt).run();
     }
