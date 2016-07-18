@@ -83,7 +83,7 @@ public interface ByteSlice {
 
 }
 
-class SingleByteSlice implements ByteSlice {
+final class SingleByteSlice implements ByteSlice {
     final int start;//inclusive
     final int end;//exclusive
     final byte[] buffer;
@@ -237,7 +237,7 @@ class SingleByteSlice implements ByteSlice {
     }
 }
 
-class CompositeByteSlice implements ByteSlice {
+final class CompositeByteSlice implements ByteSlice {
 
     private final SingleByteSlice prefix;
     private final SingleByteSlice suffix;

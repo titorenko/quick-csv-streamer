@@ -25,7 +25,7 @@ public class CharsetHandlingTest {
     
     @Test
     public void testUtf8() throws Exception {
-        Stream<City> cities = CSVParserBuilder.aParser(EnumMapper.MAPPER, EnumMapper.RusFields.class) //TODO add that example to docs 
+        Stream<City> cities = CSVParserBuilder.aParser(EnumMapper.MAPPER, EnumMapper.RusFields.class) 
                 .usingCharset("UTF-8").build().parse(utf8input);
         String[] actual = cities.map(c -> c.toString()).toArray(String[]::new);
         assertArrayEquals(expected, actual);
@@ -41,7 +41,7 @@ public class CharsetHandlingTest {
     
     public static class EnumMapper { 
         
-        enum RusFields { //TODO add that example to docs
+        enum RusFields {
             Latitude("Широта"),
             Longitude("Долгота"),
             AccentCity("Город"),

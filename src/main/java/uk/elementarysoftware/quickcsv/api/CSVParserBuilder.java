@@ -71,6 +71,11 @@ public class CSVParserBuilder<T, K extends Enum<K>> {
         return builder;
     }
 	
+	/**
+	 * Use supplied header and do not take header from the source.
+	 * @param header - header fields
+	 * @return this parser builder
+	 */
 	public CSVParserBuilder<T, K> usingExplicitHeader(String... header) {
 		Objects.requireNonNull(subsetView);
 		this.subsetView = FieldSubsetView.forExplicitHeader(subsetView.getFieldSubset(), header);

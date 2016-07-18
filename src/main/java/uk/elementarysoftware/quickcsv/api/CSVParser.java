@@ -7,8 +7,7 @@ import java.io.InputStream;
 import java.util.stream.Stream;
 
 /**
- * CSV Parser can parse input such as {@link InputStream} or more generally {@link ByteArraySource} to Stream&lt;T&gt;.
- * 
+ * CSV Parser can parse inputs such as {@link InputStream} or more generally {@link ByteArraySource} to Stream&lt;T&gt;.
  * 
  * @param <T> - the type of the parsing result
  */

@@ -70,7 +70,7 @@ public class BenchmarkParserAndMapperInMemory {
     }
 
     @Benchmark
-    public void benchmarkParallelParserEnum(BenchmarkState state, Blackhole bh) {
+    public void benchmarkParallelParserWithHeader(BenchmarkState state, Blackhole bh) {
         CSVParser<City> parser = CSVParserBuilder
         		.aParser(City.EnumMapper.MAPPER, City.EnumMapper.Fields.class)
         		.usingExplicitHeader("Country", "City", "AccentCity", "Region", "Population", "Latitude", "Longitude")

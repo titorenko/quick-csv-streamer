@@ -5,6 +5,6 @@
 .settings
 bin
 build
-todo
+private-notes.txt
 /keys/
 gradle.properties

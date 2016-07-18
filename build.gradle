@@ -9,7 +9,7 @@ apply plugin: 'me.champeau.gradle.jmh'
 apply plugin: "eclipse"
 
 group = 'uk.elementarysoftware'
-version = '0.2.0-SNAPSHOT'
+version = '0.2.0'
 
 sourceCompatibility = JavaVersion.VERSION_1_8
 
@@ -51,16 +51,8 @@ task sourcesJar(type: Jar) {
     from sourceSets.main.allSource
 }
 
-task testJar(type: Jar) {
-    classifier = 'tests'
-    from { configurations.testCompile.collect { it.isDirectory() ? it : zipTree(it) } }
-    from {
-        sourceSets.test.output
-    }
-}
-
 artifacts {
-    archives javadocJar, sourcesJar, testJar
+    archives javadocJar, sourcesJar
 }
 
 if (hasProperty('ossrhUsername')) {
