@@ -3,6 +3,7 @@ Quick CSV Streamer
 
 [![Build Status](https://travis-ci.org/titorenko/quick-csv-streamer.svg?branch=master)](https://travis-ci.org/titorenko/quick-csv-streamer)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/uk.elementarysoftware/quick-csv-streamer/badge.svg)](https://maven-badges.herokuapp.com/maven-central/uk.elementarysoftware/quick-csv-streamer/)
+[![Javadoc](https://javadoc-emblem.rhcloud.com/doc/uk.elementarysoftware/quick-csv-streamer/badge.svg)](http://www.javadoc.io/doc/uk.elementarysoftware/quick-csv-streamer)
 
 Quick CSV streamer is a high performance CSV parsing library with Java 8 Stream API.
 The library omits many redundant steps found in other open source parsers and produces minimal amount
