@@ -40,6 +40,14 @@ public class TestParsingWithHeader {
         String[] actual = cities.map(c -> c.toString()).toArray(String[]::new);
         assertArrayEquals(expected, actual);
     }
+    
+    @Test
+    public void testSequentialWithEnumApiWithFirstColumn() throws Exception {
+        Stream<City> cities = CSVParserBuilder.aParser(City.HeaderAwareMapper2.MAPPER, City.HeaderAwareMapper2.Fields.class) 
+                .build().parse(input).sequential();
+        String[] actual = cities.map(c -> c.toString()).toArray(String[]::new);
+        assertEquals(3, actual.length);
+    }
 	
 	@Test
 	public void testParallel() throws Exception {

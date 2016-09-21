@@ -30,6 +30,22 @@ public class City {
         };
     }
     
+    public static class HeaderAwareMapper2 {
+        public static enum Fields {
+        	AccentCity, Population, Latitude, Longitude, Country, City
+        }
+        
+        public static final Function<CSVRecordWithHeader<Fields>, City> MAPPER = r -> {
+            return new City(
+                r.getField(Fields.City).asString(),
+                r.getField(Fields.Population).asInt(),
+                r.getField(Fields.Latitude).asDouble(),
+                r.getField(Fields.Longitude).asDouble(),
+                r.getField(Fields.Population).asLong()
+            );
+        };
+    }
+    
     private static final int CITY_INDEX = 2;
     
     private final String city;

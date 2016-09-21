@@ -1,3 +1,9 @@
+0.2.1
+==========
+Bugfixes
+ * Fix NPE occuring when first column is included into parsing results using header in the source API. 
+   Issue was reported by Pradeep Jaligama. 
+
 0.2.0
 ==========
 New features

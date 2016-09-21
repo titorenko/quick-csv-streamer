@@ -153,6 +153,7 @@ public class FieldSubsetView<K extends Enum<K>> {
                 while((field = slice.getNextField(metadata)) != null) {
                     header.add(field.asString());
                 }
+                slice.nextLine();
                 this.header = header;
             }
 
