@@ -1,0 +1,4 @@
+"Country","City","AccentCity","Region","Population","Latitude","Longitude"
+"ad","andorra","Andorra","07","","42.5","1.5166667"
+"gb","city of london","City of London","H9","","51.514125","-.093689"
+"ua","kharkiv","Kharkiv","07","","49.980814","36.252718"
