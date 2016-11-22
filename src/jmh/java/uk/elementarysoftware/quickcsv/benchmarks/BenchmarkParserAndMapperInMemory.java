@@ -72,9 +72,9 @@ public class BenchmarkParserAndMapperInMemory {
     @Benchmark
     public void benchmarkParallelParserWithHeader(BenchmarkState state, Blackhole bh) {
         CSVParser<City> parser = CSVParserBuilder
-        		.aParser(City.EnumMapper.MAPPER, City.EnumMapper.Fields.class)
-        		.usingExplicitHeader("Country", "City", "AccentCity", "Region", "Population", "Latitude", "Longitude")
-        		.build();
+                .aParser(City.EnumMapper.MAPPER, City.EnumMapper.Fields.class)
+                .usingExplicitHeader("Country", "City", "AccentCity", "Region", "Population", "Latitude", "Longitude")
+                .build();
         Stream<City> stream = parser.parse(new ByteArrayInputStream(state.content));
         stream.forEach(c -> bh.consume(c));
     }

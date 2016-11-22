@@ -24,28 +24,28 @@ public class QuickCSVParser<T, K extends Enum<K>> implements CSVParser<T> {
 
     private final CSVFileMetadata metadata;
     private final int bufferSize;
-	private final Function<CSVRecord, T> mapper;
+    private final Function<CSVRecord, T> mapper;
     private final Optional<FieldSubsetView<K>> fieldSubsetView;
     private final Charset charset;
 
     public QuickCSVParser(int bufferSize, CSVFileMetadata metadata, Function<CSVRecordWithHeader<K>, T> mapper, 
-    		FieldSubsetView<K> fieldSubsetView, Charset charset) {
-	    this.metadata = metadata;
-	    this.bufferSize = bufferSize;
-	    this.mapper = cast(mapper);
-	    this.fieldSubsetView = Optional.of(fieldSubsetView);
-	    this.charset = charset;
-	}
+            FieldSubsetView<K> fieldSubsetView, Charset charset) {
+        this.metadata = metadata;
+        this.bufferSize = bufferSize;
+        this.mapper = cast(mapper);
+        this.fieldSubsetView = Optional.of(fieldSubsetView);
+        this.charset = charset;
+    }
     
     public QuickCSVParser(int bufferSize, CSVFileMetadata metadata, Function<CSVRecord, T> mapper, Charset charset) {
-	    this.metadata = metadata;
-	    this.bufferSize = bufferSize;
-	    this.mapper = mapper;
-	    this.fieldSubsetView = Optional.empty();
-	    this.charset = charset;
-	}
+        this.metadata = metadata;
+        this.bufferSize = bufferSize;
+        this.mapper = mapper;
+        this.fieldSubsetView = Optional.empty();
+        this.charset = charset;
+    }
     
-	@SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked")
     private static <T, K extends Enum<K>> Function<CSVRecord, T> cast(Function<CSVRecordWithHeader<K>, T> f) {
         return r -> f.apply((CSVRecordWithHeader<K>) r);
     }
@@ -72,7 +72,7 @@ public class QuickCSVParser<T, K extends Enum<K>> implements CSVParser<T> {
         private Spliterator<T> sequentialSplitterator = Spliterators.emptySpliterator();
 
         SplittingSpliterator(ByteArraySource bas) {
-        	this.bas = bas;
+            this.bas = bas;
         }
 
         @Override
@@ -233,9 +233,9 @@ public class QuickCSVParser<T, K extends Enum<K>> implements CSVParser<T> {
             return fieldTemplates[view.indexOfInSourceView(fieldName.ordinal())];
         }
 
-		@Override
-		public List<String> getHeader() {
-			return view.getHeader();
-		}
+        @Override
+        public List<String> getHeader() {
+            return view.getHeader();
+        }
     }
 }

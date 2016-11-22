@@ -15,14 +15,14 @@ class ParserFactory {
     ParserFactory() {
         this.useQuickParsers = "true".equals(System.getProperty("uk.elementarysoftware.useQuickParsers", "true"));
     }
-	
-	public DoubleParser getDoubleParser() {
-		if (useQuickParsers) {
-			return new QuickDoubleParser();
-		} else {
-			return new JDKDoubleParserAdapter();
-		}
-	}
+    
+    public DoubleParser getDoubleParser() {
+        if (useQuickParsers) {
+            return new QuickDoubleParser();
+        } else {
+            return new JDKDoubleParserAdapter();
+        }
+    }
 
     public IntParser getIntParser() {
         return new QuickIntParser();

@@ -67,8 +67,8 @@ public class LongParserTest {
     }
     
     public static void main(String[] args) {
-		byte[] x = new byte[] {-39, -94};
-		long l = Long.parseLong(new String(x));
-		System.out.println(l);
-	}
+        byte[] x = new byte[] {-39, -94};
+        long l = Long.parseLong(new String(x));
+        System.out.println(l);
+    }
 }

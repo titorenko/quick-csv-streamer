@@ -15,26 +15,26 @@ import uk.elementarysoftware.quickcsv.sampledomain.City;
 public class CityManualPerformanceTester {
     long maxSpeed = 0;
     
-	public void run() throws Exception {
-	    File file = prepareFile(300);
-	    try {
-    		System.out.println("Running file of size "+(file.length() / 1024 / 1024)+ "MB");
-    		run(file, 30);
-	    } finally {
-	        file.delete();
+    public void run() throws Exception {
+        File file = prepareFile(300);
+        try {
+            System.out.println("Running file of size "+(file.length() / 1024 / 1024)+ "MB");
+            run(file, 30);
+        } finally {
+            file.delete();
         } 
-	}
-	
-	private void run(File source, int nRuns) throws Exception {
-	    CSVParser<City> parser = CSVParserBuilder.aParser(City.MAPPER).build();
-	    //CSVParser<City> parser = CSVParserBuilder.aParser(City.HeaderAwareMapper.MAPPER, City.HeaderAwareMapper.Fields.class).usingExplicitHeader("Country", "City", "AccentCity", "Region", "Population", "Latitude", "Longitude").build();//TODO add that example to docs
-		
-	    for (int i = 0; i < nRuns; i++) {
-			runOnce(parser, source);
-		}
-	}
+    }
+    
+    private void run(File source, int nRuns) throws Exception {
+        CSVParser<City> parser = CSVParserBuilder.aParser(City.MAPPER).build();
+        //CSVParser<City> parser = CSVParserBuilder.aParser(City.HeaderAwareMapper.MAPPER, City.HeaderAwareMapper.Fields.class).usingExplicitHeader("Country", "City", "AccentCity", "Region", "Population", "Latitude", "Longitude").build();//TODO add that example to docs
+        
+        for (int i = 0; i < nRuns; i++) {
+            runOnce(parser, source);
+        }
+    }
 
-	private void runOnce(CSVParser<City> parser, File source) throws IOException {
+    private void runOnce(CSVParser<City> parser, File source) throws IOException {
         long start = System.currentTimeMillis();
         parser.parse(source).count();
         long duration = System.currentTimeMillis() - start;
@@ -47,16 +47,16 @@ public class CityManualPerformanceTester {
     }
 
     private File prepareFile(int sizeMultiplier) throws Exception {
-		InputStream is = getClass().getResourceAsStream("/cities-unix.txt");
-		byte[] content = IOUtils.toByteArray(is);
-		File result = File.createTempFile("csv", "large");
-		for (int i = 0; i < sizeMultiplier; i++) {
-			FileUtils.writeByteArrayToFile(result, content, true);
-		}
-		return result;
-	}
-	
-	public static void main(String[] args) throws Exception {
-		new CityManualPerformanceTester().run(); 
-	}
+        InputStream is = getClass().getResourceAsStream("/cities-unix.txt");
+        byte[] content = IOUtils.toByteArray(is);
+        File result = File.createTempFile("csv", "large");
+        for (int i = 0; i < sizeMultiplier; i++) {
+            FileUtils.writeByteArrayToFile(result, content, true);
+        }
+        return result;
+    }
+    
+    public static void main(String[] args) throws Exception {
+        new CityManualPerformanceTester().run(); 
+    }
 }

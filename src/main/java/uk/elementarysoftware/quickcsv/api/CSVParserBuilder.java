@@ -20,15 +20,15 @@ public class CSVParserBuilder<T, K extends Enum<K>> {
     
     private CSVFileMetadata metadata = CSVFileMetadata.RFC_4180;
 
-	private Function<CSVRecord, T> recordMapper;
+    private Function<CSVRecord, T> recordMapper;
 
-	private Function<CSVRecordWithHeader<K>, T> recordWithHeaderMapper;
-	private FieldSubsetView<K> subsetView = null;
-	
-	private Charset charset = Charset.defaultCharset();
+    private Function<CSVRecordWithHeader<K>, T> recordWithHeaderMapper;
+    private FieldSubsetView<K> subsetView = null;
+    
+    private Charset charset = Charset.defaultCharset();
     
     private CSVParserBuilder() {
-	}
+    }
 
     /**
      * Create new parser using supplied mapping function. 
@@ -42,50 +42,50 @@ public class CSVParserBuilder<T, K extends Enum<K>> {
      * @param <K> - ignored
      * @return this parser builder
      */
-	public static <T, K extends Enum<K>> CSVParserBuilder<T, K> aParser(Function<CSVRecord, T> mapper) {
+    public static <T, K extends Enum<K>> CSVParserBuilder<T, K> aParser(Function<CSVRecord, T> mapper) {
         CSVParserBuilder<T, K> builder = new CSVParserBuilder<T, K>();
         builder.recordMapper = mapper;
         return builder;
     }
-	
-	/**
-	 * Create new header-aware parser using supplied mapping function. 
-	 * 
-	 * Mapping function can not store reference to {@link CSVRecordWithHeader} object, 
-	 * it needs to be a pure function that create new instance of T.
-	 *  
+    
+    /**
+     * Create new header-aware parser using supplied mapping function. 
+     * 
+     * Mapping function can not store reference to {@link CSVRecordWithHeader} object, 
+     * it needs to be a pure function that create new instance of T.
+     *  
      * CSVRecordWithHeader could be mutated by the parser when next record is processed.
-	 * 
-	 * @param mapper - mapping function from CSVRecordWithHeader to T
-	 * @param fields - enumeration specifying fields that should be parsed
-	 * @param <T> - type of object that each record of the CSV data will be mapped to
+     * 
+     * @param mapper - mapping function from CSVRecordWithHeader to T
+     * @param fields - enumeration specifying fields that should be parsed
+     * @param <T> - type of object that each record of the CSV data will be mapped to
      * @param <K> - type of enumeration that is used to specify fields to be parsed
      * 
-	 * @return this parser builder
-	 */
-	
-	public static <T, K extends Enum<K>> CSVParserBuilder<T, K> aParser(Function<CSVRecordWithHeader<K>, T> mapper, Class<K> fields) {
+     * @return this parser builder
+     */
+    
+    public static <T, K extends Enum<K>> CSVParserBuilder<T, K> aParser(Function<CSVRecordWithHeader<K>, T> mapper, Class<K> fields) {
         CSVParserBuilder<T, K> builder = new CSVParserBuilder<T, K>();
         builder.recordWithHeaderMapper = mapper;
         builder.subsetView = FieldSubsetView.forSourceSuppliedHeader(fields);
         return builder;
     }
-	
-	/**
-	 * Use supplied header and do not take header from the source.
-	 * @param header - header fields
-	 * @return this parser builder
-	 */
-	public CSVParserBuilder<T, K> usingExplicitHeader(String... header) {
-		Objects.requireNonNull(subsetView);
-		this.subsetView = FieldSubsetView.forExplicitHeader(subsetView.getFieldSubset(), header);
-		return this;
-	}
     
     /**
-	 * Use tabs as separator and no quoting
-	 * @return this parser builder
-	 */
+     * Use supplied header and do not take header from the source.
+     * @param header - header fields
+     * @return this parser builder
+     */
+    public CSVParserBuilder<T, K> usingExplicitHeader(String... header) {
+        Objects.requireNonNull(subsetView);
+        this.subsetView = FieldSubsetView.forExplicitHeader(subsetView.getFieldSubset(), header);
+        return this;
+    }
+    
+    /**
+     * Use tabs as separator and no quoting
+     * @return this parser builder
+     */
     public CSVParserBuilder<T, K> forTabs() {
         this.metadata = CSVFileMetadata.TABS;
         return this;
@@ -160,8 +160,8 @@ public class CSVParserBuilder<T, K extends Enum<K>> {
      */
     public CSVParser<T> build() {
         return subsetView == null ? 
-        		new QuickCSVParser<T,K>(bufferSize, metadata, recordMapper, charset) :
-    			new QuickCSVParser<T,K>(bufferSize, metadata, recordWithHeaderMapper, subsetView, charset);
+                new QuickCSVParser<T,K>(bufferSize, metadata, recordMapper, charset) :
+                new QuickCSVParser<T,K>(bufferSize, metadata, recordWithHeaderMapper, subsetView, charset);
     }
     
     public static class CSVFileMetadata {

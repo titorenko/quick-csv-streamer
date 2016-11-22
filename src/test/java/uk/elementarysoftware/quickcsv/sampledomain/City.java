@@ -32,7 +32,7 @@ public class City {
     
     public static class HeaderAwareMapper2 {
         public static enum Fields {
-        	AccentCity, Population, Latitude, Longitude, Country, City
+            AccentCity, Population, Latitude, Longitude, Country, City
         }
         
         public static final Function<CSVRecordWithHeader<Fields>, City> MAPPER = r -> {

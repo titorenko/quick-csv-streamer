@@ -92,16 +92,16 @@ public class FieldSubsetView<K extends Enum<K>> {
     }
     
     public Class<K> getFieldSubset() {
-		return fieldSubset;
-	}
+        return fieldSubset;
+    }
 
     int[] getFieldSkipSchedule() {
         return fieldSkipSchedule;
     }
     
-	List<String> getHeader() {
-		return headerSource.getHeader();
-	}
+    List<String> getHeader() {
+        return headerSource.getHeader();
+    }
 
     int indexOfInSourceView(int parseIdx) {
         return parseOrderToSourceOrder[parseIdx];

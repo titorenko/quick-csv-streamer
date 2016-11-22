@@ -9,7 +9,7 @@ import java.util.Objects;
  */
 public class Pair<F, S> {
     
-	public final F first;
+    public final F first;
     public final S second;
 
     /**
@@ -52,7 +52,7 @@ public class Pair<F, S> {
     
     @Override
     public String toString() {
-    	return first+"="+second;
+        return first+"="+second;
     }
 
     /**
