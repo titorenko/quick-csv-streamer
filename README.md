@@ -22,7 +22,7 @@ Available from Maven Central:
 <dependency>
     <groupId>uk.elementarysoftware</groupId>
     <artifactId>quick-csv-streamer</artifactId>
-    <version>0.2.2</version>
+    <version>0.2.3</version>
 </dependency>
 ```
 

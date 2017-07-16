@@ -34,11 +34,14 @@ import uk.elementarysoftware.quickcsv.api.CSVParserBuilder;
 public class BenchmarkParserAndMapperInMemory {
     
     private static final String TEST_FILE = "src/test/resources/cities-unix.txt"; 
+    private static final String TEST_FILE_QUOTED = "src/test/resources/cities-unix-quoted.txt"; 
     
     @State(Scope.Benchmark)
     public static class BenchmarkState {
         
         byte[] content = loadFile(prepareFile(100, TEST_FILE));
+        
+        byte[] quotedContent = loadFile(prepareFile(100, TEST_FILE_QUOTED));
         
         private File prepareFile(int sizeMultiplier, String testFile) {
             try {
@@ -83,6 +86,14 @@ public class BenchmarkParserAndMapperInMemory {
     public void benchmarkSequentialParser(BenchmarkState state, Blackhole bh) {
         CSVParser<City> parser = CSVParserBuilder.aParser(City.MAPPER).build();
         Stream<City> stream = parser.parse(new ByteArrayInputStream(state.content));
+        stream.sequential().forEach(c -> bh.consume(c));
+    }
+    
+
+    @Benchmark
+    public void benchmarkSequentialParserWithQuotes(BenchmarkState state, Blackhole bh) {
+        CSVParser<City> parser = CSVParserBuilder.aParser(City.MAPPER).build();
+        Stream<City> stream = parser.parse(new ByteArrayInputStream(state.quotedContent));
         stream.sequential().forEach(c -> bh.consume(c));
     }
     

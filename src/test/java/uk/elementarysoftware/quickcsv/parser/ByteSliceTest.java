@@ -19,6 +19,7 @@ public class ByteSliceTest {
     
     private static final String FIELDS22 = "field11,field12\nfield21,field22";
     private static final String FIELDS33 = "field11,field12,field13\nfield21,field22,field23\nfield31,field32,field33";
+    private static final String QUOTED = "'field11','field12'\n'field21','field22'\n";
     
     @Test
     public void testSplitOnLastLineEnd() {
@@ -146,6 +147,22 @@ public class ByteSliceTest {
         }
     }
     
+    @Test
+    public void testMultiSliceFieldSplitQuoted() {
+        String content = QUOTED;
+        for (int splitIndex = 0; splitIndex < content.length(); splitIndex++) {
+            String prefix = content.substring(0, splitIndex);
+            String suffix = content.substring(splitIndex);
+            ByteSlice join = ByteSlice.join(sliceFor(prefix.getBytes()), sliceFor(suffix.getBytes()));
+            assertEquals(content, join.toString());
+            List<Field> fields = getFieldsQuoted(join, '\'');
+            assertArrayEquals(
+                    "Failed on split index "+splitIndex,
+                    new String[] {"field11","field12","field21","field22"}, 
+                    fields.stream().map(f -> f.asString()).toArray());
+        }
+    }
+    
     private ByteSlice sliceFor(byte[] bytes) {
         return ByteSlice.wrap(new ByteArrayChunk(bytes, bytes.length, false, (b) -> {}), Charset.defaultCharset());
     }
@@ -163,13 +180,20 @@ public class ByteSliceTest {
         return result;
     }
     
-    private List<Field> getFieldsQuoted(ByteSlice bs) {
+    private List<Field> getFieldsQuoted(ByteSlice bs, char quote) {
         List<Field> result = new ArrayList<>();
         while(true) {
-            ByteArrayField f = bs.nextField(',', '"');
-            if (f == null) break;
-            result.add(f.clone());
+            ByteArrayField f = bs.nextField(',', quote);
+            if (f == null) {
+                if (!bs.nextLine()) break;
+            } else {
+                result.add(f.clone());
+            }
         }
         return result;
+    }
+    
+    private List<Field> getFieldsQuoted(ByteSlice bs) {
+        return getFieldsQuoted(bs, '"');
     }
 }

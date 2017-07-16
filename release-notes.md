@@ -1,3 +1,9 @@
+0.2.3
+==========
+Improvement in parsing performance for quoted data 
+Bugfixes
+* Additional fix for issue quotes in the end of the line, thanks to https://github.com/jasonk000
+
 0.2.2
 ==========
 Converted tabs to spaces in source files

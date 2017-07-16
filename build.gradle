@@ -9,7 +9,7 @@ apply plugin: 'me.champeau.gradle.jmh'
 apply plugin: "eclipse"
 
 group = 'uk.elementarysoftware'
-version = '0.2.2'
+version = '0.2.3'
 
 sourceCompatibility = JavaVersion.VERSION_1_8
 
@@ -31,7 +31,7 @@ dependencies {
 
 jmh {
     include = '.*BenchmarkParserAndMapperInMemory.*'
-    jmhVersion = '1.16'
+    jmhVersion = '1.19'
     jvmArgsAppend = '-Xmx1g -XX:+AggressiveOpts'
 }
 

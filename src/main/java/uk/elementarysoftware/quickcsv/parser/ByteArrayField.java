@@ -34,13 +34,14 @@ public class ByteArrayField implements Field {
 
     @Override
     public String asString() {
-        String result = decoder.decodeToString(buffer, start, end - start);
-        if (quote != null) {
-            return result.replace(new StringBuffer().append(quote).append(quote), new StringBuffer().append(quote)); //TODO: optimize and add more flexible escape character
+    	String result = decoder.decodeToString(buffer, start, end - start);
+        if (quote != null && result.indexOf(quote) >= 0) {
+        	//TODO: optimise and add more flexible escape character
+        	//flag indicating if an escaped quote was seen can be passed from the parser itself as state
+            return result.replace(new StringBuffer().append(quote).append(quote), new StringBuffer().append(quote)); 
         } else {
             return result;
         }
-            
     }
 
     @Override

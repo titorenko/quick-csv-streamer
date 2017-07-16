@@ -303,9 +303,10 @@ final class CompositeByteSlice implements ByteSlice {
         int endIndex = currentIndex();
         while(hasMoreData()) {
             byte cur = currentByte();
-            if (cur == c && prevByte() == quote) {
+            if ((cur == c || cur == CR || cur == LF) && prevByte() == quote) {
                 endIndex = currentIndex() - 1;
-                nextByte();
+                if (cur == c)
+                    nextByte();
                 break;
             } else {
                 nextByte();

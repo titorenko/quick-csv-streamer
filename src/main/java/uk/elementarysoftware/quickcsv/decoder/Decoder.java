@@ -23,7 +23,7 @@ public class Decoder {
     public String decodeToString(byte[] buffer, int offset, int length) {
         return new String(buffer, offset, length, charset);
     }
-
+    
     public double decodeToDouble(byte[] buffer, int offset, int length) {
         if (length == 0) return 0.0;
         return doubleParser.parse(buffer, offset, length);
