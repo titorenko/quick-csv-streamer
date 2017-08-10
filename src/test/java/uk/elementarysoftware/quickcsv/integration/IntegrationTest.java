@@ -13,10 +13,10 @@ import uk.elementarysoftware.quickcsv.sampledomain.City;
 
 public class IntegrationTest {
     
-    File inputDos = new File("src/test/resources/cities-dos.txt");
-    File inputUnix = new File("src/test/resources/cities-unix.txt");
+    static final File inputDos = new File("src/test/resources/cities-dos.txt");
+    static final File inputUnix = new File("src/test/resources/cities-unix.txt");
     
-    int[] bufferSizesToTest = new int[] {1024, 11_111, 1_000_000};
+    static final int[] bufferSizesToTest = new int[] {1024, 11_111, 1_000_000};
     
     
     @Test
