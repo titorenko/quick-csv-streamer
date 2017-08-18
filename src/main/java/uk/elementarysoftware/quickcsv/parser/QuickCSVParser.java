@@ -224,7 +224,12 @@ public class QuickCSVParser<T, K extends Enum<K>> implements CSVParser<T> {
             for (int i = 0; i < skipSchedule.length; i++) {
                 skipFields(skipSchedule[i]);
                 ByteArrayField field = super.getNextField();//TODO: init into template directly
-                fieldTemplates[i].initFrom(field);
+                if (field != null) {
+                	fieldTemplates[i].initFrom(field);
+                } else {
+                	//when line ends with separator it is very difficult to distinguish between that and overflow when getNextField() returns null. Here we assume correct field schedule and map null to empty field.
+                	fieldTemplates[i].initFrom(ByteArrayField.EMPTY);
+                }
             }
         }
 

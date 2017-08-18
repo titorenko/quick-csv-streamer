@@ -114,6 +114,16 @@ public class StraightForwardParser implements CSVParser<CSVRecord> {
         public boolean isEmpty() {
             return value.length() == 0;
         }
+
+		@Override
+		public Double asDoubleWrapper() {
+			return asDouble();
+		}
+
+		@Override
+		public Integer asInteger() {
+			return asInt();
+		}
     }
 
     @Override

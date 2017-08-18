@@ -275,8 +275,9 @@ final class CompositeByteSlice implements ByteSlice {
         }
         int startIndex = currentIndex();
         int endIndex = currentIndex();
+        byte cur = 0;
         while(hasMoreData()) {
-            byte cur = currentByte();
+            cur = currentByte();
             if (cur == c || cur == CR || cur == LF) {
                 endIndex = currentIndex();
                 if (cur == c)
@@ -287,7 +288,7 @@ final class CompositeByteSlice implements ByteSlice {
             }
         }
         if (currentIndex() == startIndex) return null;
-        if (!hasMoreData()) endIndex = prefix.end + suffix.end;
+        if (cur != c && !hasMoreData()) endIndex = prefix.end + suffix.end;
         return createField(startIndex, endIndex, null);
     }
 

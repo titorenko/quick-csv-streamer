@@ -8,6 +8,8 @@ import uk.elementarysoftware.quickcsv.decoder.Decoder;
 
 public class ByteArrayField implements Field {
     
+	public static final ByteArrayField EMPTY = new ByteArrayField(new byte[0], 0, 0, null);
+	
     private final Decoder decoder;
 
     private byte[] buffer;
@@ -102,4 +104,14 @@ public class ByteArrayField implements Field {
     public boolean isEmpty() {
         return start >= end;
     }
+
+	@Override
+	public Double asDoubleWrapper() {
+		return isEmpty() ? null : asDouble();
+	}
+
+	@Override
+	public Integer asInteger() {
+		return isEmpty() ? null : asInt();
+	}
 }

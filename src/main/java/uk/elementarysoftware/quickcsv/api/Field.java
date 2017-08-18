@@ -11,14 +11,17 @@ import java.nio.ByteBuffer;
  * structure and the no longer use it. 
  */
 public interface Field {
+	
     public ByteBuffer raw();
     
     public String asString();
     public double asDouble();
+    public Double asDoubleWrapper();
     public byte asByte();
     public char asChar();
     public short asShort();
     public int asInt();
+    public Integer asInteger();
     public long asLong();
     
     public boolean isEmpty();
