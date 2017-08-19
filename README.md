@@ -6,11 +6,13 @@ Quick CSV Streamer
 [![Javadoc](https://javadoc-emblem.rhcloud.com/doc/uk.elementarysoftware/quick-csv-streamer/badge.svg)](http://www.javadoc.io/doc/uk.elementarysoftware/quick-csv-streamer)
 
 Quick CSV streamer is a high performance CSV parsing library with Java 8 Stream API.
-The library omits many redundant steps found in other open source parsers and produces minimal amount
-of garbage during parsing, reducing pressure on the garbage collector.
+The library operates in "zero-copy" mode and only parses what is required by the client. Amount
+of garbage produced is also optimized, reducing pressure on the garbage collector.
 Parallel, multi-core parsing is supported transparently via Java Stream API.
 
-Compared to other open source Java CSV parsing libraries likely speeds up will be at 2x - 10x range in sequential mode. Naturally parallel mode will improve performance even further. See benchmarking results below for more details.
+Compared to other open source Java CSV parsing libraries Quick CSV achieves speed ups at 2x - 10x range in sequential, single thread, mode. Naturally parallel mode improves performance further. See benchmarking results below for more details.
+
+The library is limited to so called "line-optimal" charsets like UTF-8, US-ASCII, ISO-8859-1 and some others. Such line-optimal charsets have the property that line feed ('\n'), carriage return ('\r'), CSV separator are easily identifiable from other encoded characters.
 
 
 Maven dependency
@@ -22,7 +24,7 @@ Available from Maven Central:
 <dependency>
     <groupId>uk.elementarysoftware</groupId>
     <artifactId>quick-csv-streamer</artifactId>
-    <version>0.2.3</version>
+    <version>0.2.4</version>
 </dependency>
 ```
 
@@ -150,11 +152,10 @@ It is very important to appreciate that performance might vary dramattically dep
 
 |Benchmark                      |Mode  |Cnt  |   Score |   Error   |Units|
 | ----------------------------- | ---- | --- | ------- | --------- | --- |
-|OpenCSVParser                  |avgt  |  5  |2405.238 |± 82.958   |ms/op|
-|Quick CSV Parallel with header |avgt  |  5  | 205.132 |±  2.193   |ms/op|
-|Quick CSV Parallel (advanced)  |avgt  |  5  | 178.582 |±  0.640   |ms/op|
-|Quick CSV Sequential           |avgt  |  5  | 660.334 |± 67.605   |ms/op|
-
+|OpenCSVParser                  |avgt  |  5  |2393.921 |± 262.347  |ms/op|
+|Quick CSV Parallel with header |avgt  |  5  | 205.013 |±  1.739   |ms/op|
+|Quick CSV Parallel (advanced)  |avgt  |  5  | 177.262 |±  1.739   |ms/op|
+|Quick CSV Sequential           |avgt  |  5  | 648.462 |± 45.991   |ms/op|
 
 Comparison is done with OpenCSV library v3.8, performance of other libraries can be extrapolated using chart from https://github.com/uniVocity/csv-parsers-comparison
 
@@ -165,4 +166,4 @@ Quick CSV Streamer library requires Java 8, it has no other dependencies.
 License
 --------------
 Library is licensed under the terms of [GPL v2.0 license](http://www.gnu.org/licenses/gpl-2.0.html).
-Please contact me if you wish to use this library under more commercially friendly license.
+Please contact me if you wish to use this library under more commercially friendly license or want to extend it, for example to add async parsing or support different file formats.

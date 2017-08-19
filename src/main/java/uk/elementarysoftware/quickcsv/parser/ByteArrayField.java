@@ -106,12 +106,12 @@ public class ByteArrayField implements Field {
     }
 
 	@Override
-	public Double asDoubleWrapper() {
+	public Double asBoxedDouble() {
 		return isEmpty() ? null : asDouble();
 	}
 
 	@Override
-	public Integer asInteger() {
+	public Integer asBoxedInt() {
 		return isEmpty() ? null : asInt();
 	}
 }

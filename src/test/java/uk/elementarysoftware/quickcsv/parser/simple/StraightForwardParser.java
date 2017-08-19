@@ -116,12 +116,12 @@ public class StraightForwardParser implements CSVParser<CSVRecord> {
         }
 
 		@Override
-		public Double asDoubleWrapper() {
+		public Double asBoxedDouble() {
 			return asDouble();
 		}
 
 		@Override
-		public Integer asInteger() {
+		public Integer asBoxedInt() {
 			return asInt();
 		}
     }

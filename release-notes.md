@@ -1,6 +1,13 @@
+0.2.4
+==========
+Added asBoxedInt, asBoxedDouble convenience methods.
+
+Bugfixes:
+* Issues #6 and #7 fixed
+
 0.2.3
 ==========
-Improvement in parsing performance for quoted data 
+Improvement in parsing performance for quoted data
 Bugfixes
 * Additional fix for issue quotes in the end of the line, thanks to https://github.com/jasonk000
 
